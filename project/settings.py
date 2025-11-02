@@ -9,8 +9,35 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# .env
+load_dotenv()
+SECRET_KEY_DJ = os.getenv("SECRET_KEY_DJ", "")
+DJANGO_SETTINGS_MODULE = os.getenv("DJANGO_SETTINGS_MODULE", "")
+
+# APP
+APP_PROTOCOL = os.getenv("APP_PROTOCOL", "")
+APP_HOST = os.getenv("APP_HOST", "")
+APP_HOST_REMOTE = os.getenv("APP_HOST_REMOTE", "")
+APP_PORT = os.getenv("APP_PORT", "")
+APP_TIME_ZONE = os.getenv("APP_TIME_ZONE", "")
+
+# db production
+POSTGRES_DB = os.getenv("POSTGRES_DB", "")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
+
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
+DB_ENGINE = os.getenv("DB_ENGINE", "")
+
+# db development
+DATABASE_ENGINE_LOCAL = os.getenv("DATABASE_ENGINE_LOCAL", "")
+DATABASE_LOCAL = os.getenv("DATABASE_LOCAL", "")
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,28 +47,96 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-7eqf1$la@pabcu9+veittwbp1pt+xt)9l^no6e=o_59gdx1z*p"
+SECRET_KEY = f"{SECRET_KEY_DJ}"
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY must be set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    f"{APP_HOST_REMOTE}",
+    "127.0.0.1",
+]
+
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
+DATABASES = {
+    "default": {
+        'ENGINE': f'{DB_ENGINE}',
+        'NAME': f'{POSTGRES_DB}',
+        'USER': f'{POSTGRES_USER}',
+        'PASSWORD': f"{POSTGRES_PASSWORD}",
+        'HOST': f'{POSTGRES_HOST}',
+        'PORT': f'{POSTGRES_PORT}',
+        "KEY_PREFIX": "drive_",  # it's my prefix for the keys
+    }
+}
+
+# DEBUG
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
+if DEBUG:
+    SECURE_BROWSER_XSS_FILTER = False
+    SECURE_CONTENT_TYPE_NOSNIFF = False
+    SECURE_SSL_REDIRECT = False # http is False & https is True
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+    WHITENOISE_MAX_AGE = 0
+    WHITENOISE_USE_FINDERS = False
+    # DB
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR /  "truckdriver_db.sqlite3",
+    }
+    ALLOWED_HOSTS.pop(0)
+
 
 
 # Application definition
 
+# Application definition
 INSTALLED_APPS = [
+    "daphne",
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail.contrib.settings',
+    'wagtail',
+    'taggit',
+    'modelcluster',
+    'rest_framework',
+    'drf_spectacular',
+    'corsheaders',
+    'drf_yasg',
+    'adrf',
+    'channels',
+    "webpack_loader",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "person",
+    "wink",
 ]
 
+
 MIDDLEWARE = [
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -54,7 +149,9 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(BASE_DIR, "templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -67,18 +164,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "project.wsgi.application"
+ASGI_APPLICATION = "project.asgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
 
 # Password validation
@@ -99,25 +188,200 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# hash passwords
+# https://docs.djangoproject.com/en/4.2/topics/auth/passwords/
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.BCryptPasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+    "django.contrib.auth.hashers.MD5PasswordHasher",
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = f"{APP_TIME_ZONE}"
 
 USE_I18N = True
 
 USE_TZ = True
 
+DATE_FORMAT = 'd.m.Y'
+DATETIME_FORMAT = 'd.m.Y H:i'
+USE_L10N = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
-STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR,  "static"),
+]
+STATIC_ROOT = os.path.join(BASE_DIR,  "collectstatic/")
+STATIC_URL = 'static/'
 
+# '''WHITENOISE'''
+# for a static files in production
+# https://whitenoise.readthedocs.io/en/stable/django.html
+WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
+WHITENOISE_USE_FINDERS = True
+WAGTAILDOCS_EXTENSIONS = ['pdf','docx' ],# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# DEFAULT_AUTO_FIELD = "django.db.models_views.BigAutoField"
+DEFAULT_CHARSET = "utf-8"
+AUTH_USER_MODEL = "person.UserModel"
+
+# '''Cookie'''
+SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False  # change to the True - CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict'
+SESSION_COOKIE_AGE = 86400
+
+# '''CORS'''
+# False - this value is default and it's means what the server don't accept from other sources.
+CORS_ORIGIN_ALLOW_ALL = True
+# Here, we allow the URL list for publicated
+CORS_ALLOWED_ORIGINS = [
+    f"http://{APP_HOST_REMOTE}:8000",
+    "http://127.0.0.1:8000",
+]
+
+# https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file#csrf-integration
+# https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
+# This is list from private of URL
+CSRF_TRUSTED_ORIGINS = [
+    f"http://{APP_HOST_REMOTE}:8000",
+    "http://127.0.0.1:8000",
+    ]
+# Allow the cookie in HTTP request.
+CORS_ALLOW_CREDENTIALS = True
+# Allow the methods to the methods in HTTP
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "Authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "Accept-Language",
+    "Content-Language"
+]
+
+"""REST_FRAMEWORK SETTINGS AND JWT-tokens"""
+# https://pypi.org/project/djangorestframework-simplejwt/4.3.0/
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/stateless_user_authentication.html
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',  # This for works with sessions
+        'rest_framework.authentication.TokenAuthentication',   # Options for API
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+
+# '''WEBPACK_LOADER'''
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "CACHE": not DEBUG,
+        # 'BUNDLE_DIR_NAME': '..\\frontend\\src\\bundles',
+        "BUNDLE_DIR_NAME": "static",
+        "STATS_FILE": os.path.join(
+            BASE_DIR, "bundles/webpack-stats.json"
+        ),
+
+        "POLL_INTERVAL": 0.1,
+        "TIMEOUT": None,
+        "TEST": {
+            # "NAME": "test_cloud",
+        },
+        "IGNORE": [
+            # '.+\.map$'
+            r".+\.hot-update.js",
+            r".+\.map",
+        ],
+        "LOADER_CLASS": "webpack_loader.loader.WebpackLoader",
+    }
+}
+
+# '''lOGGING'''
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    },
+}
+
+# """SWAGGER"""
+# https://drf-yasg.readthedocs.io/en/stable/security.html#security-definitions
+
+SWAGGER_USE_COMPAT_RENDERERS = False
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'VALIDATOR_URL': None,
+    'exclude_namespaces':[
+
+    ]
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API - Financial flow',
+    'DESCRIPTION': 'Financial project - description',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+
+# WAGTAIL
+
+
+# WAGTAIL
+WAGTAIL_SITE_NAME = 'FLOWS'
+# Replace the search backend
+WAGTAILSEARCH_BACKENDS = {
+ 'default': {
+   'BACKEND': 'wagtail.search.backends.elasticsearch8',
+   'INDEX': 'myapp'
+ }
+}
+WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
