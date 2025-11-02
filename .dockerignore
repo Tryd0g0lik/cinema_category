@@ -1,0 +1,17 @@
+.flake8
+.gitignore
+*.yaml
+log_*.log
+poetry.lock
+pytest.ini
+.pylintrc
+Dockerfile
+nginx
+*.md
+.editorconfig
+.browserslistrc
+*test*
+/__tests__
+*-dependencies.txt
+*.sqlite3
+img
