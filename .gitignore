@@ -276,6 +276,7 @@ core
 **/screen/*
 *.sh
 *.exp
+*.sqlite3
 
 !.browserslistrc
 !.editorconfig
