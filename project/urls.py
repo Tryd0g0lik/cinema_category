@@ -5,8 +5,8 @@ project/urls.py
 from django.contrib import admin
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
-from  wagtail.documents import urls as wagtaildocs_urls
-from django.urls import (path, include,re_path)
+from wagtail.documents import urls as wagtaildocs_urls
+from django.urls import path, include, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
@@ -20,19 +20,19 @@ schema_view = get_schema_view(
     openapi.Info(
         title="API for WINK Hakaton",
         description="При написании сценария важно придерживаться выбранного возрастного рейтинга, устанавливаемого на основании норм Возрастной классификации информационной продукции. Такой подход гарантирует попадание контента в оптимальные эфирные/кинопрокатные слоты и доступность на стриминговых платформах, что позволяет достичь целевой аудитории зрителей. Автоматическая проверка рейтинга по сценарию позволяет авторам и продюсерам заранее понимать, где текст может выйти за рамки выбранной категории - делая процесс производства быстрее, прозрачнее и экономичнее.",
-        default_version = "v1",
+        default_version="v1",
         service_identity=False,
         contact=openapi.Contact(email="work80@mail.ru"),
     ),
     public=True,
     permission_classes=[AllowAny],
     patterns=[
-        path("api/v1/", include((api_urls, "api"), namespace="api")),
-    ]
+        path("api/v1/", include((api_urls, "api_v1"), namespace="api_v1")),
+    ],
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("person/", include((person_urls, "person"), namespace="person")),
     path("wink/", include((person_urls, "wink"), namespace="wink")),
     path("api/", include((api_urls, "api_keys"), namespace="api_keys")),

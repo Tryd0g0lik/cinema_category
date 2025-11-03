@@ -14,6 +14,7 @@ from django.core.validators import (
     RegexValidator,
     MaxValueValidator,
 )
+from django.contrib.auth.models import User
 
 from project.settings import WAGTAILDOCS_EXTENSIONS
 
@@ -27,8 +28,6 @@ class FilesModel(models.Model):
         verbose_name=_("File"),
         validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
     )
-
-
 
     class Meta:
         verbose_name = _("File")
@@ -50,7 +49,7 @@ class IntermediateFilesModel(models.Model):
         related_name="loaded_files",
     )
     user = models.ForeignKey(
-        "UserModel",
+        User,
         on_delete=models.CASCADE,
         verbose_name=_("User"),
         db_column="user_id",
@@ -66,7 +65,7 @@ class IntermediateFilesModel(models.Model):
             help_text=_("Created at"),
             db_column="created_at",
             validators=[
-                RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+                # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
             ],
         ),
     )
@@ -95,4 +94,4 @@ class IntermediateFilesModel(models.Model):
         unique_together = ("upload",)
 
     def __str__(self):
-        return f' File Id: {self.upload} was created at {self.created_at}.'
+        return f" File Id: {self.upload} was created at {self.created_at}."

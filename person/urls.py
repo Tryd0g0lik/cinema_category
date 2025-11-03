@@ -1,4 +1,0 @@
-"""
-person/urls.py
-"""
-urlpatterns = []

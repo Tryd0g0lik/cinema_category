@@ -125,7 +125,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "person",
+    # "person",
     "wink",
 ]
 
@@ -232,7 +232,7 @@ STATIC_URL = 'static/'
 # https://whitenoise.readthedocs.io/en/stable/django.html
 WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
 WHITENOISE_USE_FINDERS = True
-WAGTAILDOCS_EXTENSIONS = f_extension.split(", "),# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
@@ -241,7 +241,6 @@ MEDIA_URL = 'media/'
 
 # DEFAULT_AUTO_FIELD = "django.db.models_views.BigAutoField"
 DEFAULT_CHARSET = "utf-8"
-AUTH_USER_MODEL = "person.UserModel"
 
 # '''Cookie'''
 SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
