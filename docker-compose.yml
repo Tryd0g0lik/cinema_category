@@ -1,0 +1,18 @@
+services:
+    redis:
+        container_name: wink_redis
+        image: redis:7.2-alpine
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        volumes:
+            - redis_data:/data
+        #depends_on:
+            #-
+        ports:
+            -   "6379:6379"
+        restart: unless-stopped
+volumes:
+    redis_data:
