@@ -50,7 +50,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = f"{SECRET_KEY_DJ}"
+SECRET_KEY = f"{SECRET_KEY_DJ}".strip()
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in environment variables")
 
@@ -58,7 +58,7 @@ if not SECRET_KEY:
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    f"{APP_HOST_REMOTE}",
+    f"{APP_HOST_REMOTE}".split(),
     "127.0.0.1",
 ]
 
@@ -67,12 +67,12 @@ ALLOWED_HOSTS = [
 
 DATABASES = {
     "default": {
-        'ENGINE': f'{DB_ENGINE}',
-        'NAME': f'{POSTGRES_DB}',
-        'USER': f'{POSTGRES_USER}',
-        'PASSWORD': f"{POSTGRES_PASSWORD}",
-        'HOST': f'{POSTGRES_HOST}',
-        'PORT': f'{POSTGRES_PORT}',
+        'ENGINE': f'{DB_ENGINE}'.strip(),
+        'NAME': f'{POSTGRES_DB}'.strip(),
+        'USER': f'{POSTGRES_USER}'.strip(),
+        'PASSWORD': f"{POSTGRES_PASSWORD}".strip(),
+        'HOST': f'{POSTGRES_HOST}'.strip(),
+        'PORT': f'{POSTGRES_PORT}'.strip(),
         "KEY_PREFIX": "drive_",  # it's my prefix for the keys
     }
 }
@@ -95,11 +95,7 @@ if DEBUG:
     }
     ALLOWED_HOSTS.pop(0)
 
-
-
-# Application definition
-
-# Application definition
+# APPLICATION DEFINITION
 INSTALLED_APPS = [
     "daphne",
     'wagtail.contrib.forms',
@@ -173,7 +169,7 @@ ASGI_APPLICATION = "project.asgi.application"
 
 
 
-# Password validation
+# PASSWORD VALIDATION
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -191,7 +187,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# hash passwords
+# HASH passwords
 # https://docs.djangoproject.com/en/4.2/topics/auth/passwords/
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
@@ -203,12 +199,12 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
-# Internationalization
+# INTERNATIONALIZATION
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = "ru"
 
-TIME_ZONE = f"{APP_TIME_ZONE}"
+TIME_ZONE = f"{APP_TIME_ZONE.strip()}"
 
 USE_I18N = True
 
@@ -218,7 +214,7 @@ DATE_FORMAT = 'd.m.Y'
 DATETIME_FORMAT = 'd.m.Y H:i'
 USE_L10N = False
 
-# Static files (CSS, JavaScript, Images)
+# STATIC FILES (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -258,7 +254,7 @@ SESSION_COOKIE_AGE = 86400
 CORS_ORIGIN_ALLOW_ALL = True
 # Here, we allow the URL list for publicated
 CORS_ALLOWED_ORIGINS = [
-    f"http://{APP_HOST_REMOTE}:8000",
+    f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
 ]
 
@@ -266,7 +262,7 @@ CORS_ALLOWED_ORIGINS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
 # This is list from private of URL
 CSRF_TRUSTED_ORIGINS = [
-    f"http://{APP_HOST_REMOTE}:8000",
+    f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
     ]
 # Allow the cookie in HTTP request.
@@ -295,17 +291,28 @@ CORS_ALLOW_HEADERS = [
     "Content-Language"
 ]
 
-"""REST_FRAMEWORK SETTINGS AND JWT-tokens"""
+# """REST_FRAMEWORK SETTINGS AND JWT-tokens"""
 # https://pypi.org/project/djangorestframework-simplejwt/4.3.0/
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/stateless_user_authentication.html
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+# 'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # This for works with sessions
         'rest_framework.authentication.TokenAuthentication',   # Options for API
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes = int(JWT_ACCESS_TOKEN_LIFETIME_MINUTES)),
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(JWT_REFRESH_TOKEN_LIFETIME_DAYS)),
+#     "SIGNING_KEY": SECRET_KEY,
+# }
+
+#"""DEBUG TOOLBAR - SERVER DAPHNE"""
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+}
 
 # '''WEBPACK_LOADER'''
 WEBPACK_LOADER = {
@@ -374,11 +381,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-
-# WAGTAIL
-
-
-# WAGTAIL
+# '''WAGTAIL'''
 WAGTAIL_SITE_NAME = 'FLOWS'
 # Replace the search backend
 WAGTAILSEARCH_BACKENDS = {
@@ -388,3 +391,12 @@ WAGTAILSEARCH_BACKENDS = {
  }
 }
 WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
+
+
+# '''CELERY'''
+# 'celeryconfig.py' contains more information,
+CELERY_BROKER_URL = "redis://%s/0" % f"{APP_HOST_REMOTE.strip()}:6380"
+CELERY_RESULT_BACKEND = "redis://%s/1" % f"{APP_HOST_REMOTE.strip()}:6380"
+REDIS_URL = CELERY_BROKER_URL.strip()
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 60 * 60 * 12
