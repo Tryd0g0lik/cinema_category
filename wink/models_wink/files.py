@@ -28,14 +28,7 @@ class FilesModel(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
     )
 
-    refer = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        verbose_name=_("Reference"),
-        editable=False,
-        db_column="refer",
-        help_text=_("Reference link to the file - pdf, docx"),
-    )
+
 
     class Meta:
         verbose_name = _("File")
@@ -44,7 +37,7 @@ class FilesModel(models.Model):
         unique_together = ("upload",)
 
     def __str__(self):
-        return self.upload
+        return self.upload.name
 
 
 class IntermediateFilesModel(models.Model):
@@ -86,8 +79,20 @@ class IntermediateFilesModel(models.Model):
         ),
     )
 
+    refer = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        verbose_name=_("Reference"),
+        editable=False,
+        db_column="refer",
+        help_text=_("Reference link to the file - pdf, docx"),
+    )
+
     class Meta:
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
         db_table = "intermediate_files"
         unique_together = ("upload",)
+
+    def __str__(self):
+        return f' File Id: {self.upload} was created at {self.created_at}.'
