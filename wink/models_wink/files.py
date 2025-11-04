@@ -21,8 +21,7 @@ from django.contrib.auth.models import User
 
 class FilesModel(models.Model):
     upload = models.FileField(
-        upload_to="uploads/files/%Y/%m/%d/",
-        unique=True,
+        upload_to="files/%Y/%m/%d/",
         db_column="file",
         help_text=_("Upload the file - pdf, docx"),
         verbose_name=_("File"),
@@ -33,11 +32,12 @@ class FilesModel(models.Model):
         verbose_name = _("File")
         verbose_name_plural = _("Files")
         db_table = "files"
-        unique_together = ("upload",)
 
     def __str__(self):
         return self.upload.name
 
+    def save(self, *args, **kwargs):
+        return super().save(*args, **kwargs)
 
 class IntermediateFilesModel(models.Model):
     upload = models.ForeignKey(
@@ -91,7 +91,7 @@ class IntermediateFilesModel(models.Model):
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
         db_table = "intermediate_files"
-        unique_together = ("upload",)
+
 
     def __str__(self):
         return f" File Id: {self.upload} was created at {self.created_at}."

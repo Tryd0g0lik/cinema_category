@@ -13,3 +13,5 @@
 
 
 app имеет JWT настройки (предусмотрено для расширения функционала)
+
+"`celery -A project.celery worker --loglevel=info --pool=solo`"

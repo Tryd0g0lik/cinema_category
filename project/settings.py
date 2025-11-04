@@ -136,7 +136,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -144,8 +144,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "wink.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -239,8 +241,8 @@ WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
 WHITENOISE_USE_FINDERS = True
 WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'media/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -262,13 +264,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
 ]
 
-# https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file#csrf-integration
-# https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
-# This is list from private of URL
-CSRF_TRUSTED_ORIGINS = [
-    f"http://{APP_HOST_REMOTE.strip()}:8000",
-    "http://127.0.0.1:8000",
-    ]
+
 # Allow the cookie in HTTP request.
 CORS_ALLOW_CREDENTIALS = True
 # Allow the methods to the methods in HTTP
@@ -295,6 +291,15 @@ CORS_ALLOW_HEADERS = [
     "Content-Language"
 ]
 
+# """CSRF""
+# https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file#csrf-integration
+# https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
+# This is list from private of URL
+CSRF_COOKIE_AGE = 1800 # seconds This is the time live of token (in COOKIE)
+CSRF_TRUSTED_ORIGINS = [
+    f"http://{APP_HOST_REMOTE.strip()}:8000",
+    "http://127.0.0.1:8000",
+    ]
 # """REST_FRAMEWORK SETTINGS AND JWT-tokens"""
 # https://pypi.org/project/djangorestframework-simplejwt/4.3.0/
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/stateless_user_authentication.html
@@ -386,7 +391,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 # '''WAGTAIL'''
-# WAGTAIL_SITE_NAME = 'FLOWS'
+WAGTAIL_SITE_NAME = 'WINK_CINEMA'
 # Replace the search backend
 WAGTAILSEARCH_BACKENDS = {
  'default': {
