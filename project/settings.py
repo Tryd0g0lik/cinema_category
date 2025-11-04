@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -37,6 +38,10 @@ DB_ENGINE = os.getenv("DB_ENGINE", "")
 # db development
 DATABASE_ENGINE_LOCAL = os.getenv("DATABASE_ENGINE_LOCAL", "")
 DATABASE_LOCAL = os.getenv("DATABASE_LOCAL", "")
+
+# jwt
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES = os.getenv("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 5)
+JWT_REFRESH_TOKEN_LIFETIME_DAYS = os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1)
 
 #file extension
 f_extension = "pdf, docx"
@@ -91,25 +96,25 @@ if DEBUG:
     # DB
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR /  "truckdriver_db.sqlite3",
+        "NAME": BASE_DIR /  "wink_db.sqlite3",
     }
     ALLOWED_HOSTS.pop(0)
 
 # APPLICATION DEFINITION
 INSTALLED_APPS = [
     "daphne",
-    'wagtail.contrib.forms',
-    'wagtail.contrib.redirects',
-    'wagtail.embeds',
-    'wagtail.sites',
-    'wagtail.users',
-    'wagtail.snippets',
-    'wagtail.documents',
-    'wagtail.images',
-    'wagtail.search',
-    'wagtail.admin',
-    'wagtail.contrib.settings',
-    'wagtail',
+    # 'wagtail.contrib.forms',
+    # 'wagtail.contrib.redirects',
+    # 'wagtail.embeds',
+    # 'wagtail.sites',
+    # 'wagtail.users',
+    # 'wagtail.snippets',
+    # 'wagtail.documents',
+    # 'wagtail.images',
+    # 'wagtail.search',
+    # 'wagtail.admin',
+    # 'wagtail.contrib.settings',
+    # 'wagtail',
     'taggit',
     'modelcluster',
     'rest_framework',
@@ -131,7 +136,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+    # 'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -230,9 +235,9 @@ STATIC_URL = 'static/'
 # '''WHITENOISE'''
 # for a static files in production
 # https://whitenoise.readthedocs.io/en/stable/django.html
-WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
-WHITENOISE_USE_FINDERS = True
-WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+# WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
+# WHITENOISE_USE_FINDERS = True
+# WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
@@ -295,18 +300,18 @@ CORS_ALLOW_HEADERS = [
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/stateless_user_authentication.html
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-# 'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',
+        'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # This for works with sessions
         'rest_framework.authentication.TokenAuthentication',   # Options for API
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes = int(JWT_ACCESS_TOKEN_LIFETIME_MINUTES)),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=int(JWT_REFRESH_TOKEN_LIFETIME_DAYS)),
-#     "SIGNING_KEY": SECRET_KEY,
-# }
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes = int(JWT_ACCESS_TOKEN_LIFETIME_MINUTES)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(JWT_REFRESH_TOKEN_LIFETIME_DAYS)),
+    "SIGNING_KEY": SECRET_KEY,
+}
 
 #"""DEBUG TOOLBAR - SERVER DAPHNE"""
 DEBUG_TOOLBAR_CONFIG = {
@@ -381,21 +386,17 @@ SPECTACULAR_SETTINGS = {
 }
 
 # '''WAGTAIL'''
-WAGTAIL_SITE_NAME = 'FLOWS'
-# Replace the search backend
-WAGTAILSEARCH_BACKENDS = {
- 'default': {
-   'BACKEND': 'wagtail.search.backends.elasticsearch8',
-   'INDEX': 'myapp'
- }
-}
-WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
+# WAGTAIL_SITE_NAME = 'FLOWS'
+# # Replace the search backend
+# WAGTAILSEARCH_BACKENDS = {
+#  'default': {
+#    'BACKEND': 'wagtail.search.backends.elasticsearch8',
+#    'INDEX': 'myapp'
+#  }
+# }
+# WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
 
 
 # '''CELERY'''
-# 'celeryconfig.py' contains more information,
-CELERY_BROKER_URL = "redis://%s/0" % f"{APP_HOST_REMOTE.strip()}:6380"
-CELERY_RESULT_BACKEND = "redis://%s/1" % f"{APP_HOST_REMOTE.strip()}:6380"
-REDIS_URL = CELERY_BROKER_URL.strip()
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 60 * 60 * 12

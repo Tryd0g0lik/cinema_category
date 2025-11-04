@@ -16,7 +16,7 @@ from django.core.validators import (
 )
 from django.contrib.auth.models import User
 
-from project.settings import WAGTAILDOCS_EXTENSIONS
+# from project.settings import WAGTAILDOCS_EXTENSIONS
 
 
 class FilesModel(models.Model):
@@ -26,7 +26,7 @@ class FilesModel(models.Model):
         db_column="file",
         help_text=_("Upload the file - pdf, docx"),
         verbose_name=_("File"),
-        validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
+        # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
     )
 
     class Meta:

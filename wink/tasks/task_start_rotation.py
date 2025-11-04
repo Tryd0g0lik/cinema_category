@@ -13,7 +13,7 @@ from wink.redis_utils import get_redis_client
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
 
-FilesModel = apps.get_model("wink")
+FilesModel = apps.get_model("wink", "FilesModel")
 IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 
 """
@@ -47,7 +47,7 @@ return 0
 @shared_task(bind=False)
 def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bool:
     """
-    Description: Start rotating 'refer' for 'intermediateFileModel' with 'pk=inner_pk',
+    Description: Start rotating 'refer' for 'IntermediateFileModel' with 'pk=inner_pk',
     - 'MAX_CONCURRENT' session per 'FilersModel.upload'.
     - uses CAS upload to change refer safely
     - 'refer' This is a special key of security for file working.

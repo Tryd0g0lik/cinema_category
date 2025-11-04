@@ -1,3 +1,5 @@
+broker_url = "redis://83.166.245.209:6379/0"
+result_backend = "redis://83.166.245.209:6379/0"
 task_serializer = "json"
 result_serializer = "json"
 accept_content = ["json"]
