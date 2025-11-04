@@ -103,18 +103,18 @@ if DEBUG:
 # APPLICATION DEFINITION
 INSTALLED_APPS = [
     "daphne",
-    # 'wagtail.contrib.forms',
-    # 'wagtail.contrib.redirects',
-    # 'wagtail.embeds',
-    # 'wagtail.sites',
-    # 'wagtail.users',
-    # 'wagtail.snippets',
-    # 'wagtail.documents',
-    # 'wagtail.images',
-    # 'wagtail.search',
-    # 'wagtail.admin',
-    # 'wagtail.contrib.settings',
-    # 'wagtail',
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail.contrib.settings',
+    'wagtail',
     'taggit',
     'modelcluster',
     'rest_framework',
@@ -136,7 +136,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    # 'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -235,9 +235,9 @@ STATIC_URL = 'static/'
 # '''WHITENOISE'''
 # for a static files in production
 # https://whitenoise.readthedocs.io/en/stable/django.html
-# WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
-# WHITENOISE_USE_FINDERS = True
-# WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
+WHITENOISE_USE_FINDERS = True
+WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
@@ -387,14 +387,14 @@ SPECTACULAR_SETTINGS = {
 
 # '''WAGTAIL'''
 # WAGTAIL_SITE_NAME = 'FLOWS'
-# # Replace the search backend
-# WAGTAILSEARCH_BACKENDS = {
-#  'default': {
-#    'BACKEND': 'wagtail.search.backends.elasticsearch8',
-#    'INDEX': 'myapp'
-#  }
-# }
-# WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
+# Replace the search backend
+WAGTAILSEARCH_BACKENDS = {
+ 'default': {
+   'BACKEND': 'wagtail.search.backends.elasticsearch8',
+   'INDEX': 'myapp'
+ }
+}
+WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
 
 
 # '''CELERY'''
