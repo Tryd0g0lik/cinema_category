@@ -21,11 +21,19 @@ from django.contrib.auth.models import User
 
 class FilesModel(models.Model):
     upload = models.FileField(
-        upload_to="files/%Y/%m/%d/",
-        db_column="file",
+        upload_to="upload/%Y/%m/%d/",
         help_text=_("Upload the file - pdf, docx"),
         verbose_name=_("File"),
         # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
+    )
+    name = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+    )
+    size = models.PositiveIntegerField(
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -37,7 +45,10 @@ class FilesModel(models.Model):
         return self.upload.name
 
     def save(self, *args, **kwargs):
+        self.name = self.upload.name
+        self.size = self.upload.size
         return super().save(*args, **kwargs)
+
 
 class IntermediateFilesModel(models.Model):
     upload = models.ForeignKey(
@@ -69,6 +80,7 @@ class IntermediateFilesModel(models.Model):
             ],
         ),
     )
+
     updated_at = (
         models.DateField(
             auto_now=True,
@@ -91,7 +103,6 @@ class IntermediateFilesModel(models.Model):
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
         db_table = "intermediate_files"
-
 
     def __str__(self):
         return f" File Id: {self.upload} was created at {self.created_at}."
