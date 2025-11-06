@@ -118,7 +118,7 @@ INSTALLED_APPS = [
     'taggit',
     'modelcluster',
     'rest_framework',
-    'drf_spectacular',
+    # 'drf_spectacular',
     'corsheaders',
     'drf_yasg',
     'adrf',
@@ -312,7 +312,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',  # This for works with sessions
         'rest_framework.authentication.TokenAuthentication',   # Options for API
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
