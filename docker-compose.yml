@@ -68,7 +68,7 @@ services:
             - backend
             - database
     celery:
-        container_name: celery_kontinent
+        container_name: celery_app
         build:
             context: .
             dockerfile: ./Dockerfile  # Тот же Dockerfile, что и для backend

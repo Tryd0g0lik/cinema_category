@@ -26,9 +26,11 @@ class AuthenticationMiddleware:
                 root_user.is_active = True
                 root_user.save()
                 request.user = root_user
-            resp = self.get_response(request)
+
             connection.close()
-            return resp
+
         except Exception as e:
             print(f"❌ Database connection failed: {e}")
 
+        resp = self.get_response(request)
+        return resp
