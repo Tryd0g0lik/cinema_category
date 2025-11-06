@@ -63,7 +63,7 @@ if not SECRET_KEY:
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    f"{APP_HOST_REMOTE}".split(),
+    f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
 ]
 
