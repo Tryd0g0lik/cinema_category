@@ -46,7 +46,6 @@ services:
             - volume_static:/www/src/collectstatic
         depends_on:
             - db
-            - redis
         ports:
             - "8000:8000"
         networks:

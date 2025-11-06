@@ -19,3 +19,4 @@ whitenoise>=6.11.0
 wagtail>=7.1.1
 redis>=7.0.1
 django-redis>=6.0.0
+drf_spectacular >= 0.29.0
