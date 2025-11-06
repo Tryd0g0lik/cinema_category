@@ -24,6 +24,8 @@ class FilesModel(models.Model):
         upload_to="upload/%Y/%m/%d/",
         help_text=_("Upload the file - pdf, docx"),
         verbose_name=_("File"),
+        null=True,
+        blank=True,
         # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
     )
     name = models.CharField(
@@ -45,8 +47,9 @@ class FilesModel(models.Model):
         return self.upload.name
 
     def save(self, *args, **kwargs):
-        self.name = self.upload.name
-        self.size = self.upload.size
+        if self.upload:
+            self.name = self.upload.name
+            self.size = self.upload.size
         return super().save(*args, **kwargs)
 
 
