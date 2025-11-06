@@ -1,4 +1,94 @@
 services:
+    db:
+        container_name: postgres_app
+        image: postgres
+        env_file: ./.env
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        restart: unless-stopped
+        healthcheck:
+            test: [ 'CMD-SHELL', '-d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        ports:
+            - "5432:5432"
+        networks:
+            - database
+    backend:
+        container_name: app
+        build:
+            dockerfile: ./Dockerfile
+            context: .
+        env_file: ./.env
+        command:
+            - bash
+            - -c
+            - |
+                python3 ./manage.py makemigrations
+                python3 ./manage.py migrate
+                python3 ./manage.py collectstatic --clear --noinput
+                python3 ./manage.py shell -c "
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                if not User.objects.filter(username='root').exists():
+                    User.objects.create_superuser('root', 'admin@example.com', '123')
+                    print('Superuser root created successfully')
+                else:
+                    print('Superuser root already exists')
+                "
+                daphne -b 0.0.0.0 -p 8000 project.asgi:application
+
+        volumes:
+            - ./:/www/src
+            - volume_static:/www/src/collectstatic
+        depends_on:
+            - db
+            - redis
+        ports:
+            - "8000:8000"
+        networks:
+            - database
+            - backend
+    nginx:
+        container_name: nginx_app
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        depends_on:
+            - backend
+            - db
+        volumes:
+            - volume_static:/www/src/collectstatic
+        restart: on-failure
+        ports:
+            - "80:80"
+        networks:
+            - backend
+            - database
+    celery:
+        container_name: celery_kontinent
+        build:
+            context: .
+            dockerfile: ./Dockerfile  # Тот же Dockerfile, что и для backend
+        env_file: ./.env
+        command:
+            - sh
+            - -c
+            - "celery -A project.celery worker --loglevel=info"
+
+        volumes:
+            - .:/www/src
+        depends_on:
+            - db
+            - redis
+        restart: unless-stopped
+        networks:
+            - queue
+            - backend
+            - database
     redis:
         container_name: wink_redis
         image: redis:7.2-alpine
@@ -15,5 +105,28 @@ services:
         ports:
             -   "6379:6379"
         restart: unless-stopped
+        networks:
+            - queue
+
 volumes:
     redis_data:
+    volume_static:
+
+networks:
+    backend:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    database:
+        driver: bridge
+        internal: true
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    queue:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    frontend:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru

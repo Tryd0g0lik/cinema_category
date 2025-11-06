@@ -48,7 +48,7 @@ class FilesModel(models.Model):
 
     def save(self, *args, **kwargs):
         if self.upload:
-            self.name = self.upload.name
+            self.name = self.upload.name.split("/")[-1]
             self.size = self.upload.size
         return super().save(*args, **kwargs)
 

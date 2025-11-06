@@ -11,6 +11,9 @@ from adrf import viewsets
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.conf import settings
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from wink.wink_api.serialisers import IntermediateFilesSerializer, FilesSerializer
 from wink.models_wink.files import (
     FilesModel,
@@ -18,17 +21,24 @@ from wink.models_wink.files import (
 )
 from logs import configure_logging
 
+
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
 
 
-async def handle_uploaded_file(path, f, index):
+async def handle_uploaded_file(path: str, f, index: int):
+    """
+    :param str path:
+    :param f: it from django's 'request.FILES["upload"]'
+    :param int index:
+    :return: void
+    """
     with open(path, "wb+") as destination:
         for chunk in f.chunks(10 * 1024 * 1024):
             destination.write(chunk)
     path = path.split("upload")[1].replace("\\", "/")
     f_oblect = await asyncio.to_thread(lambda: FilesModel.objects.get(id=index))
-    f_oblect.upload = f"upload{path}"
+    f_oblect.upload = f"media/upload{path}"
     await f_oblect.asave()
 
 
@@ -37,6 +47,37 @@ class FilesViewSet(viewsets.ModelViewSet):
     serializer_class = FilesSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="""This method record meta-data about files and the 'upload' field is do empty. It's for the main flow.
+            Then, It create the new thread and inside of thread it upload the file to the server by server's path 'media/upload/%Y/%m/%d/file_name.{pdf|docx}'
+            Then, column 'upload' is updating from the last row's empty in the database.
+        """,
+        tags=["files"],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["upload"],
+            properties={
+                "upload": openapi.Schema(
+                    openapi.IN_FORM,
+                    description="The upload file. 'Content-Type: multipart/form-data' is request.",
+                    type=openapi.TYPE_FILE,
+                ),
+            },
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "X-CSRFToken",
+                openapi.IN_HEADER,
+                description="The X-CSRFToken header. Token 'csrftoken you cant take from the cookie or to look the API's tage 'csrf'",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ],
+        responses={
+            200: "If all nice means the response contain just the status code 200. ",
+            400: "{'errors': 'text of error'}",
+        },
+    )
     async def create(self, request, *args, **kwargs):
         """
         NODE: The method don't use the check on the duplicate!!!
