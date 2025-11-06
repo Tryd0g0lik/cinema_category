@@ -13,7 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
-
+from django.utils.translation import gettext_lazy as _
 # .env
 load_dotenv()
 SECRET_KEY_DJ = os.getenv("SECRET_KEY_DJ", "")
@@ -46,6 +46,14 @@ JWT_REFRESH_TOKEN_LIFETIME_DAYS = os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1
 #file extension
 f_extension = "pdf, docx"
 
+# wink age's category
+AGE_RATING_CHOICES = [
+    ("0+", _("Без возрастных ограничений")),
+    ("6+", _("От 6 лет")),
+    ("12+", _("От 12 лет")),
+    ("16+", _("От 16 лет")),
+    ("18+", _("Совершеннолетним")),
+]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
