@@ -10,7 +10,6 @@ import os
 from adrf import viewsets
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from django import forms
 from django.conf import settings
 from wink.wink_api.serialisers import IntermediateFilesSerializer, FilesSerializer
 from wink.models_wink.files import (
@@ -23,17 +22,16 @@ log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
 
 
-class FilesForm(forms.ModelForm):
-    class Meta:
-        model = FilesModel
-        fields = "__all__"
+async def handle_uploaded_file(path, f):
+    with open(path, "wb+") as destination:
+        for chunk in f.chunks(10 * 1024 * 1024):
+            destination.write(chunk)
 
 
 class FilesViewSet(viewsets.ModelViewSet):
     queryset = FilesModel.objects.all()
     serializer_class = FilesSerializer
-    # permission_classes = [permissions.AllowAny]
-    # parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [permissions.AllowAny]
 
     async def create(self, request, *args, **kwargs):
 
@@ -56,10 +54,9 @@ class FilesViewSet(viewsets.ModelViewSet):
 
         try:
             # RECORD META DATA
-
             f_object = FilesModel(name=file.name, size=file.size, upload=None)
             await f_object.asave()
-            # task_process_file_upload.delay(args=[], qwargs={"file_id": f_object, **request})
+
         except Exception as e:
             log.error(
                 "%s Error => %s",
@@ -73,35 +70,37 @@ class FilesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-
+            # Get path for file
             date = datetime.date.today().strftime("%Y-%m-%d").split("-")
             file_path = f"upload\\{date[0]}\\{date[1]}\\{date[2]}\\{f_object.name}"
+            upload_dir = os.path.join(settings.MEDIA_ROOT, file_path)
             try:
-                upload_dir = os.path.join(settings.MEDIA_ROOT, file_path)
-                # try:
                 os.makedirs(os.path.dirname(upload_dir), exist_ok=True)
 
                 def _run_async():
+                    """
+                    There is we open the new loop and uploading file.
+                    Our user don't waiting for us - when we will finish the upload.
+                    :return: void.
+                    """
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     loop.run_until_complete(handle_uploaded_file(upload_dir, file))
 
-                # handle_uploaded_file(upload_dir, file)
+                # OPEN NEW THREAD
                 thread = threading.Thread(target=_run_async)
                 thread.start()
                 thread.join()
             except Exception as e:
-                log.error("Error => %s", e.args[0])
+                log.error(f"{error_text} Error => %s", e.args[0])
+                return Response(
+                    {"errors": f"{error_text} Error => {e.args[0]}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except Exception as e:
             return Response({"error": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_201_CREATED)
-
-
-async def handle_uploaded_file(path, f):
-    with open(path, "wb+") as destination:
-        for chunk in f.chunks(10 * 1024 * 1024):
-            destination.write(chunk)
 
 
 class IntermediateFilesViewSet(viewsets.ModelViewSet):
