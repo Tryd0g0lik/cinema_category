@@ -36,6 +36,9 @@ class FilesModel(models.Model):
     size = models.PositiveIntegerField(
         null=True,
         blank=True,
+        validators=[
+            MinValueValidator(0),
+        ]
     )
 
     class Meta:
