@@ -16,6 +16,9 @@ from django.core.validators import (
 )
 from django.contrib.auth.models import User
 
+from wink.models_wink.category_age import Quantity
+
+
 # from project.settings import WAGTAILDOCS_EXTENSIONS
 
 
@@ -38,7 +41,7 @@ class FilesModel(models.Model):
         blank=True,
         validators=[
             MinValueValidator(0),
-        ]
+        ],
     )
 
     class Meta:
@@ -56,7 +59,7 @@ class FilesModel(models.Model):
         return super().save(*args, **kwargs)
 
 
-class IntermediateFilesModel(models.Model):
+class IntermediateFilesModel(Quantity):
     upload = models.ForeignKey(
         FilesModel,
         on_delete=models.CASCADE,
@@ -103,6 +106,14 @@ class IntermediateFilesModel(models.Model):
         editable=False,
         db_column="refer",
         help_text=_("Reference link to the file - pdf, docx"),
+    )
+
+    violations = models.ManyToManyField(
+        "BasisViolation",
+        blank=True,
+        verbose_name=_("Violations"),
+        db_column="violations",
+        help_text=_("Violations - the views of violations"),
     )
 
     class Meta:

@@ -55,6 +55,13 @@ AGE_RATING_CHOICES = [
     ("18+", _("Совершеннолетним")),
 ]
 
+COMPLIANCE_LEVEL_RATING_CHOICES = [
+    ("None", _("Соответствует")),
+    ("mild", _("Незначительное нарушение")),
+    ("moderate", _("Существенное нарушение")),
+    ("severe", _("Грубое нарушение")),
+]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
