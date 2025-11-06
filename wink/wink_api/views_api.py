@@ -22,10 +22,14 @@ log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
 
 
-async def handle_uploaded_file(path, f):
+async def handle_uploaded_file(path, f, index):
     with open(path, "wb+") as destination:
         for chunk in f.chunks(10 * 1024 * 1024):
             destination.write(chunk)
+    path = path.split("upload")[1].replace("\\", "/")
+    f_oblect = await asyncio.to_thread(lambda: FilesModel.objects.get(id=index))
+    f_oblect.upload = f"upload{path}"
+    await f_oblect.asave()
 
 
 class FilesViewSet(viewsets.ModelViewSet):
@@ -34,7 +38,9 @@ class FilesViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
     async def create(self, request, *args, **kwargs):
-
+        """
+        NODE: The method don't use the check on the duplicate!!!
+        """
         error_text = "[%s.%s]:" % (
             __class__,
             __class__.__name__,
@@ -85,7 +91,9 @@ class FilesViewSet(viewsets.ModelViewSet):
                     """
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    loop.run_until_complete(handle_uploaded_file(upload_dir, file))
+                    loop.run_until_complete(
+                        handle_uploaded_file(upload_dir, file, f_object.id)
+                    )
 
                 # OPEN NEW THREAD
                 thread = threading.Thread(target=_run_async)
