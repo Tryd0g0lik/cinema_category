@@ -82,3 +82,8 @@ class Comments(Quantity):
         db_column="refer_file_uuid_id",
         related_name="refers",
     )
+
+    class Meta:
+        verbose_name = _("Comments")
+        verbose_name_plural = _("Comments")
+        db_table = "wink_comments"

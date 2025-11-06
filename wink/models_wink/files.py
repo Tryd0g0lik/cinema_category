@@ -47,7 +47,7 @@ class FilesModel(models.Model):
     class Meta:
         verbose_name = _("File")
         verbose_name_plural = _("Files")
-        db_table = "files"
+        db_table = "wink_files"
 
     def __str__(self):
         return self.upload.name
@@ -119,7 +119,7 @@ class IntermediateFilesModel(Quantity):
     class Meta:
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
-        db_table = "intermediate_files"
+        db_table = "wink_intermediate_files"
 
     def __str__(self):
         return f" File Id: {self.upload} was created at {self.created_at}."

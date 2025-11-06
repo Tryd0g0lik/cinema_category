@@ -49,3 +49,8 @@ class BasisViolation(models.Model):
             ),
         ],
     )
+
+    class Meta:
+        verbose_name = _("Basis Violation")
+        verbose_name_plural = _("Basis Violations")
+        db_table = "wink_violations"
