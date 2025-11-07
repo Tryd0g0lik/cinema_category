@@ -67,7 +67,8 @@ class FilesModel(models.Model):
 class IntermediateFilesModel(Quantity):
     """ "
     отправляем файл на анализ
-
+    АШ скачивает файл
+    по запросу запускаем задали celery и делаем рефер
     """
 
     upload = models.ForeignKey(

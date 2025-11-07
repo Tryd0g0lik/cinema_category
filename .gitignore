@@ -291,3 +291,4 @@ core
 !./media/*.xlsx
 
 files
+!**/files

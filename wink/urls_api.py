@@ -5,7 +5,10 @@ wink/urls_api.py
 from django.urls import path, include
 from rest_framework import routers
 
-from wink.wink_api.views_api import FilesViewSet, IntermediateFilesViewSet
+from wink.wink_api.files.views_files_api import FilesViewSet
+from wink.wink_api.files.views_intermediate_files_api import IntermediateFilesViewSet
+
+
 from wink.csrftoken import CSRFTokenView
 
 router = routers.DefaultRouter()
