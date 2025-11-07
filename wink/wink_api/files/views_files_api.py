@@ -46,6 +46,8 @@ class FilesViewSet(viewsets.ModelViewSet):
         operation_description="""This method record meta-data about files and the 'upload' field is do empty. It's for the main flow.
             Then, It create the new thread and inside of thread it upload the file to the server by server's path 'media/upload/%Y/%m/%d/file_name.{pdf|docx}'
             Then, column 'upload' is updating from the last row's empty in the database.
+            Note: Record of file to the server and send it on parsing - this is two separate processes!
+            That is just the process a saving.
         """,
         tags=["files"],
         request_body=openapi.Schema(
@@ -69,7 +71,15 @@ class FilesViewSet(viewsets.ModelViewSet):
             ),
         ],
         responses={
-            200: "If all nice means the response contain just the status code 200. ",
+            200: openapi.Response(
+                description="If all nice means the response contain just the status code 200. ",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=12)
+                    },
+                ),
+            ),
             400: "{'errors': 'text of error'}",
         },
     )
@@ -144,4 +154,4 @@ class FilesViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({"error": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(data={"id": f_object.id}, status=status.HTTP_201_CREATED)
