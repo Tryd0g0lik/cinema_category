@@ -10,7 +10,7 @@ services:
             - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_MULTIPLE_DATABASES}
         restart: unless-stopped
         healthcheck:
-            test: [ 'CMD-SHELL', '-d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
+            test: [ 'CMD-SHELL', 'pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
             interval: 5s
             timeout: 5s
             retries: 5
@@ -30,7 +30,7 @@ services:
               "
         # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
         volumes:
-            - postgres_data:/var/lib/postgresql/16/data
+            - postgres_data:/var/lib/postgresql/18/data
         # - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
 
     backend:

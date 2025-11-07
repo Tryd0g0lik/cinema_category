@@ -2,7 +2,8 @@ FROM python:3.12
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 RUN mkdir /www && \
-    mkdir /www/src
+    mkdir /www/src \
+    mkdir /www/src/static
 WORKDIR /www/src
 COPY ./requirements.txt .
 RUN pip config set global.trusted-host "pypi.org files.pythonhosted.org"
