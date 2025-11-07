@@ -7,6 +7,7 @@ services:
             - POSTGRES_USER=${POSTGRES_USER}
             - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_MULTIPLE_DATABASES}
         restart: unless-stopped
         healthcheck:
             test: [ 'CMD-SHELL', '-d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
@@ -14,9 +15,19 @@ services:
             timeout: 5s
             retries: 5
         ports:
-            - "5432:5432"
+            - "5432:5432" сравнить натройки базы данных в других доерах
         networks:
             - database
+        command: |
+            sh -c '
+              until psql -c "SELECT 1"; do sleep 1; done;
+              psql -c "CREATE DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES};"
+            '
+        # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
+        volumes:
+            - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+            - postgres_data:/var/lib/postgresql/data
+
     backend:
         container_name: app
         build:
@@ -111,6 +122,7 @@ services:
 volumes:
     redis_data:
     volume_static:
+    postgres_data:
 
 networks:
     backend:
