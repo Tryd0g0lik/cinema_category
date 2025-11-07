@@ -3,6 +3,7 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.models_wink.violations import BasisViolation
+from wink.tasks.task_start_rotation import start_rotation
 from wink.wink_api.files.serialisers import IntermediateFilesSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -66,7 +67,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                             description="That is the index of user. This user who sent the one file to the parser.",
                         ),
                         "violations": openapi.Schema(
-                            description="This is array from everything of violations - total list.",
+                            description="This is array from everything of violations - total list. Swagger key is 'violations' ",
                             type=openapi.TYPE_ARRAY,
                             items=openapi.Schema(
                                 type=openapi.TYPE_INTEGER,
@@ -88,7 +89,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             500: "Internal Server Error.",
         },
     )
-    def acreate(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         """
         Из фрнта приходит заявка, что файл отправить на анализ.
         я отправляю по API от  AI сигнал, что пора качать.
@@ -130,6 +131,13 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 )
                 intermediate_file.violations.set(all_violations)
                 serializer = self.get_serializer(intermediate_file)
+                # refer = serializer.data["refer"].strip()
+                # -------------- AI REQUEST --------------
+                # тут отправляем GET запрос на AI + refer в URL-е
+                # ----------------------------------------
+                # -------------- START THE CELERY --------
+                start_rotation.delay(inter_pk=serializer.data["upload"])
+                # ----------------------------------------
                 serializer.data["refer"] = ""
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except (FilesModel.DoesNotExist, BasisViolation.DoesNotExist) as error:

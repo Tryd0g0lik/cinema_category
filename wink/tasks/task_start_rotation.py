@@ -87,7 +87,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
         """
         This is a special key - It's current quantity  sessions on 'FilersModel.upload' for one file.
         """
-        file_pk = inst.upload_id
+        file_pk = inst.upload
         count_key = ACTIVE_COUNT_KEY.format(file_pk=file_pk)
         try:
             count = r.incr(count_key)
@@ -182,7 +182,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     return True
 
 
-@shared_task(bint=False)
+@shared_task(bind=False)
 def stop_rotation(inter_pk: int, enough: int = 300) -> bool:
     """
     Description: Set stop-flag for a ratator.
