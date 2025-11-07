@@ -23,6 +23,11 @@ from wink.models_wink.category_age import Quantity
 
 
 class FilesModel(models.Model):
+    """
+    Сюда получаем файл
+    Доступный всем пользователям
+    """
+
     upload = models.FileField(
         upload_to="upload/%Y/%m/%d/",
         help_text=_("Upload the file - pdf, docx"),
@@ -60,6 +65,11 @@ class FilesModel(models.Model):
 
 
 class IntermediateFilesModel(Quantity):
+    """ "
+    отправляем файл на анализ
+
+    """
+
     upload = models.ForeignKey(
         FilesModel,
         on_delete=models.CASCADE,
@@ -105,6 +115,7 @@ class IntermediateFilesModel(Quantity):
         verbose_name=_("Reference"),
         editable=False,
         db_column="refer",
+        max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
     )
 

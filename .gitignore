@@ -288,5 +288,6 @@ core
 !./.pre-commit-config.yaml
 !./.pylintrc
 !./.logs.py
+!./media/*.xlsx
 
 files

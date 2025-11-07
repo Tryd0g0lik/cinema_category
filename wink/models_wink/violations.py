@@ -15,6 +15,9 @@ class Quantity(models.Model):
         verbose_name=_("Violations Quantity"),
     )
 
+    class Meta:
+        abstract = True
+
 
 class BasisViolation(models.Model):
     """
