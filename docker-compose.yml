@@ -18,20 +18,20 @@ services:
             - "5432:5432"
         networks:
             - database
-        command: |
-              bash -c "
-                docker-entrypoint.sh postgres &
-                until pg_isready -U $$POSTGRES_USER; do sleep 1; done;
-                for db in \$$(echo $$POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
-                  psql -U $$POSTGRES_USER -c \"CREATE DATABASE \\\"\$$db\\\";\"
-                  psql -U $$POSTGRES_USER -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"\$$db\\\" TO \\\"$$POSTGRES_USER\\\";\"
-                done
-                wait
-              "
+#    command: |
+#  bash -c "
+#    docker-entrypoint.sh postgres &
+#    until pg_isready -U $$POSTGRES_USER; do sleep 1; done;
+#    for db in \$$(echo $$POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
+#      psql -U $$POSTGRES_USER -c \"CREATE DATABASE \\\"\$$db\\\";\"
+#      psql -U $$POSTGRES_USER -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"\$$db\\\" TO \\\"$$POSTGRES_USER\\\";\"
+#    done
+#    wait
+#  "
         # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
         volumes:
             - postgres_data:/var/lib/postgresql/18/data
-        # - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+            - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
 
     backend:
         container_name: app
