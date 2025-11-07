@@ -13,4 +13,11 @@ class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        тут от меня начинают скачивать
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         pass

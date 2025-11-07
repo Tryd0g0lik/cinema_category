@@ -33,7 +33,7 @@ async def handle_uploaded_file(path: str, f, index: int):
             destination.write(chunk)
     path = path.split("upload")[1].replace("\\", "/")
     f_oblect = await asyncio.to_thread(lambda: FilesModel.objects.get(id=index))
-    f_oblect.upload = f"media/upload{path}"
+    f_oblect.upload = f"upload{path}"
     await f_oblect.asave()
 
 
@@ -88,8 +88,8 @@ class FilesViewSet(viewsets.ModelViewSet):
         NODE: The method don't use the check on the duplicate!!!
         """
         error_text = "[%s.%s]:" % (
-            __class__,
             __class__.__name__,
+            self.create.__name__,
         )
         file = request.FILES["upload"]
         serializer = self.get_serializer(data=request.data)
