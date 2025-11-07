@@ -18,11 +18,13 @@ services:
             - "5432:5432"
         networks:
             - database
-        command: |
-            sh -c '
+        command:
+            - bash
+            - c
+            - |
               until psql -c "SELECT 1"; do sleep 1; done;
-              psql -c "CREATE DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES};"
-            '
+              psql -c "CREATE DATABASE ${{ secrets.POSTGRES_MULTIPLE_DATABASES }};"
+
         # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
         volumes:
             - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
