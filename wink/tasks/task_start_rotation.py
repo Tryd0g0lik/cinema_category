@@ -64,8 +64,11 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     if inter_pk is None:
         log.info("start_rotation called with inter_pk=None")
         return False
+    log.info("[%s]BEFORE including to the 'get_redis_client()' ", (__name__))
     r = get_redis_client()
+    log.info("[%s]AFTER including to the 'get_redis_client()' ", (__name__))
     lock_key = RUN_LOCK_KEY.format(inner_pk=inter_pk)
+    log.info("[%s]'lock_key'' ", (__name__))
     stop_key = STOP_FLAG_KEY.format(inner_pk=inter_pk)
     rotator_mark = ROTATION_MARK_KEY.format(inner_pk=inter_pk)
 
@@ -78,7 +81,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     if not got:
         log.info("Rotator already running for inter_pk=%s", inter_pk)
         return False
-
+    log.info("Rotator for inter_pk=%s", inter_pk)
     try:
         try:
             # load file
