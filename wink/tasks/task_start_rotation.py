@@ -44,7 +44,11 @@ return 0
 """
 
 
-@shared_task(bind=False)
+@shared_task(
+    name=__name__,
+    bind=False,
+    authretry_for=(TimeoutError,),
+)
 def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bool:
     """
     Description: Start rotating 'refer' for 'IntermediateFileModel' with 'pk=inner_pk',
@@ -182,7 +186,11 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     return True
 
 
-@shared_task(bind=False)
+@shared_task(
+    name=__name__,
+    bind=False,
+    authretry_for=(TimeoutError,),
+)
 def stop_rotation(inter_pk: int, enough: int = 300) -> bool:
     """
     Description: Set stop-flag for a ratator.

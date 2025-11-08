@@ -7,6 +7,7 @@ services:
             - POSTGRES_USER=${POSTGRES_USER}
             - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_HOST_AUTH_METHOD=trust
         restart: unless-stopped
         healthcheck:
             test: [ 'CMD-SHELL', 'pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
@@ -43,14 +44,15 @@ services:
             - -c
             - |
                 python3 ./manage.py shell -c "
-                echo  'Ждем пока БД будет готова'
+                print( 'Ждем пока БД будет готова')
                 until pg_isready -h db -p 5432 -U $$POSTGRES_USER; do
-                  echo 'Waiting for database...'
+                  print('Waiting for database...')
                   sleep 2
                 done
-                
-                echo 'Database is ready! Starting migrations...'
+
+                prin('Database is ready! Starting migrations...')
                 "
+                
                 python3 ./manage.py makemigrations
                 python3 ./manage.py migrate
                 python3 ./manage.py collectstatic --clear --noinput

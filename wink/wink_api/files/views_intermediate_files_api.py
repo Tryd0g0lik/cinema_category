@@ -136,7 +136,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # тут отправляем GET запрос на AI + refer в URL-е
                 # ----------------------------------------
                 # -------------- START THE CELERY --------
-                start_rotation.delay(inter_pk=serializer.data["upload"])
+                start_rotation.delay((serializer.data["upload"],))
                 # ----------------------------------------
                 serializer.data["refer"] = ""
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
