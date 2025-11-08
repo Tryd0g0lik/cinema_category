@@ -290,6 +290,6 @@ core
 !./.logs.py
 
 
-files
+files/ВАСИЛЬКИ_2.docx
 !**/files
 !media/*.xlsx
