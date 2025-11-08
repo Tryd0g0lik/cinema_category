@@ -1,6 +1,8 @@
 channels[daphne]>=4.3.1
 celery[redis]>=5.0.0
 kombu[redis]>=5.0.0
+redis>=7.0.1
+django-redis>=6.0.0
 python-dotenv>=1.0.1
 scrypt>=0.8.27
 djangorestframework-simplejwt>=5.5.0
@@ -17,7 +19,6 @@ django-webpack-loader>=3.1.1
 bcrypt>=4.3.0
 whitenoise>=6.11.0
 wagtail>=7.1.1
-redis>=7.0.1
-django-redis>=6.0.0
+
 drf_yasg>=1.20.0
 pandas>=2.3.3

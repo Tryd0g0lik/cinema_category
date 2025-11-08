@@ -11,6 +11,8 @@ except ImportError:
 
 
 def get_redis_client():
+    import redis
+
     if redis is None:
         raise RuntimeError("Please install redis-py (pip install redis)")
     url = getattr(settings, "REDIS_URL", None)
