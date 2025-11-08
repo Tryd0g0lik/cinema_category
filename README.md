@@ -78,7 +78,7 @@ echo "All databases created successfully!"
 * "`redoc/`" API - возможно скачать для Postman;
 * "`swagger<format>/`".
 
-
+![swagger](./img/swagger.png)
 
 ## Админ-панель от Django
 ### Admin
