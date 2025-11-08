@@ -1,3 +1,4 @@
+import asyncio
 import os.path
 
 from adrf import viewsets
@@ -13,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.wink_api.files.serialisers import IntermediateFilesSerializer
-
+from wink.tasks.task_start_rotation import stop_rotation
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
@@ -26,28 +27,45 @@ class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
 
     @swagger_auto_schema(
         operation_description="""
-        HTTP Method is 'GET'.
+        Событие от AI - парсинг файла.
+        HTTP Method is '`GET`'.
         From `**kwargs` we get the two variables:
          - kwargs['id'] is the refer file's key - the type string;
          By this refer (only if we find the refer key in db) the our AI begin downloading the file.
-         **NOTE: How can we send a signal for user if the refer key is not found in the db !!!** This is we can see the status code 404.
+         **``NOT`: How can we send a signal for user if the refer key is not found in the db !!!** This is we can see the status code 404.
         """,
-        tage=["download"],
-        monual_parameters=[
+        tags=["download"],
+        manual_parameters=[
             openapi.Parameter(
                 "id",
                 openapi.IN_PATH,
-                description="ID is the refer file's key - the type string. Example: 'f897f411a4944abea63d6358e89833b2'",
+                description="""
+                ID is the refer file's key - the type string. Example: 'f897f411a4944abea63d6358e89833b2'
+                `NOTE:` С ключём ещё работаю. В любой момент может измениться - состав символов.
+                """,
                 type=openapi.TYPE_STRING,
-                requests=True,
+                required=True,
             ),
         ],
         responses={
-            # 200: openapi.Response(),
-            404: "ERROR => The refer's key didn't found! Repeat the request.",
+            200: openapi.Response(
+                description="File downloaded successfully",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_FILE,
+                    description="The requested file for download and File will be  downloaded successfully",
+                ),
+                header={
+                    "Content-Disposition": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Attachment header with filename",
+                    )
+                },
+            ),
+            404: '{"errors": "[FileReadOnlyModel.retrieve]: ERROR => The refer is key did not found! Repeat the request"}',
+            500: '{"errors": "ERROR => [error description]"}',
         },
     )
-    def retrieve(self, request, *args, **kwargs):
+    async def retrieve(self, request, *args, **kwargs):
         """
         тут от меня начинают скачивать
         :param request:
@@ -59,30 +77,46 @@ class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
 
         pk = kwargs.get("pk")
         try:
-            all_intermediate = IntermediateFilesModel.objects.filter(refer=pk)
-            if all_intermediate.first() is None:
+            intermediate_all = [
+                view async for view in IntermediateFilesModel.objects.filter(refer=pk)
+            ]
+
+            if len(intermediate_all) == 0:
                 return Response(
                     {
                         "errors": f"{error_test} ERROR => The refer's key didn't found! Repeat the request"
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            intermediate_obj = all_intermediate.first()
-            file_id = intermediate_obj.upload.id
-            file_obj = get_object_or_404(FilesModel, id=file_id)
+            intermediate_obj = intermediate_all[0]
+            user_id = await asyncio.to_thread(lambda: intermediate_obj.user_id)
+            file_id = await asyncio.to_thread(lambda: intermediate_obj.upload.id)
+            file_obj = await asyncio.to_thread(
+                lambda: get_object_or_404(FilesModel, id=file_id)
+            )
             if not file_obj.upload or not os.path.exists(file_obj.upload.path):
                 return Response(
                     {"errors": f"{error_test} ERROR => The file invalid."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-            # file = file_obj.file.read()
-            # file_name = os.path.basename(file_obj.file.name)
-            #
+
             file_path = file_obj.upload.path
-            response = FileResponse(open(file_obj.upload.path, "rb"))
+            response = await asyncio.to_thread(
+                lambda: FileResponse(open(file_obj.upload.path, "rb"))
+            )
             response["Content-Disposition"] = (
                 f'attachment; filename="{os.path.basename(file_path)}"'
             )
+            # -------------- START THE CELERY --------
+            # The django's signal can use for the time then start the 'start_rotation'.
+            try:
+                await stop_rotation.delay(user_id)
+            except Exception as e:
+                import traceback
+
+                tb = traceback.format_exc()
+                log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
+
             return response
         except Exception as e:
             return Response(

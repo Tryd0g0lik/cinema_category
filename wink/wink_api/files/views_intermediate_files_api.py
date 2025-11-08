@@ -22,6 +22,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_description="""
+            Событие от пользователя - отправляет файл парсинг.
             That is get the data from request and save them.
             Then send a signal on AI for would be to begin load (parsing) the file
         """,
@@ -57,11 +58,6 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                             type=openapi.TYPE_INTEGER,
                             description="That is the static number and all the time this the variable will have the number 0",
                             example=0,
-                        ),
-                        "refer": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="That is the static string and all tne time this the variable will have the empty string",
-                            example="",
                         ),
                         "upload": openapi.Schema(
                             type=openapi.TYPE_INTEGER,
@@ -158,8 +154,17 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     tb = traceback.format_exc()
                     log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
                 # ----------------------------------------
-                serializer.data["refer"] = ""
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+                ser = serializer.data
+                data = {
+                    "id": ser.get("id"),
+                    "upload": ser.get("upload"),
+                    "user": ser.get("user"),
+                    "violations": ser.get("violations"),
+                    "violations_quantity": ser.get("violations_quantity"),
+                }
+
+                return Response(data, status=status.HTTP_201_CREATED)
             except (FilesModel.DoesNotExist, BasisViolation.DoesNotExist) as error:
                 return Response(
                     {

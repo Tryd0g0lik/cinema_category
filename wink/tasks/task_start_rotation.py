@@ -203,7 +203,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
 def stop_rotation(inter_pk: int, enough: int = 300) -> bool:
     """
     Description: Set stop-flag for a ratator.
-    The runnig start start_rotator wil observe this flag and stop/
+    The runing start start_rotator wil observe this flag and stop/
     :param int inter_pk: uses Redis lock to prevent double start for same.
     :return: bool
     """
