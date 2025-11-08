@@ -11,3 +11,4 @@ app = Celery(
     ],
 )
 app.config_from_object(celeryconfig)
+app.conf.broker_connection_retry_on_startup = True

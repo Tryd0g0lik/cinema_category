@@ -29,6 +29,16 @@ accept_content = ["json"]
 timezone = "Asia/Krasnoyarsk"
 enable_utc = True
 
+# Увеличиваем таймауты
+
+broker_transport_options = {
+    "visibility_timeout": 3600,  # 1 час
+    "socket_timeout": 3600,  # Таймаут сокета (в секундах)
+    "socket_connect_timeout": 30,  # Таймаут подключения
+    "retry_on_timeout": True,  # Повтор при таймауте
+    "max_retries": 3,  # Максимальное количество попыток
+}
+
 worker_concurrency = 1
 worker_prefetch_multiplier = 1
 task_track_started = True

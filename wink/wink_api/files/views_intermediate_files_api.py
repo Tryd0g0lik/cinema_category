@@ -1,4 +1,5 @@
 from adrf import viewsets
+import logging
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
@@ -7,6 +8,11 @@ from wink.tasks.task_start_rotation import start_rotation
 from wink.wink_api.files.serialisers import IntermediateFilesSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from logs import configure_logging
+from wink.redis_utils import get_redis_client
+
+log = logging.getLogger(__name__)
+configure_logging(logging.INFO)
 
 
 class IntermediateFilesViewSet(viewsets.ModelViewSet):
@@ -136,7 +142,10 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # тут отправляем GET запрос на AI + refer в URL-е
                 # ----------------------------------------
                 # -------------- START THE CELERY --------
-                start_rotation.delay((serializer.data["upload"],))
+                try:
+                    start_rotation.delay((serializer.data["upload"],))
+                except Exception as e:
+                    log.error("[start_rotation]: ERROR => " + str(e))
                 # ----------------------------------------
                 serializer.data["refer"] = ""
                 return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -27,7 +27,6 @@ whitenoise = "^6.11.0"
 wagtail = "^7.1.1"
 celery = "^5.5.3"
 redis = "^7.0.1"
-django-redis = "^6.0.0"
 pandas = "^2.3.3"
 
 
