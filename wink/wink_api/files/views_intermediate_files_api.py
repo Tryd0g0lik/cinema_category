@@ -9,7 +9,7 @@ from wink.wink_api.files.serialisers import IntermediateFilesSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
-from wink.redis_utils import get_redis_client
+
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
@@ -97,9 +97,16 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
     )
     def create(self, request, *args, **kwargs):
         """
-        Из фрнта приходит заявка, что файл отправить на анализ.
-        я отправляю по API от  AI сигнал, что пора качать.
-        И она будут качать из FileReadOnlyModel
+        descript :  This method is used when - user return file to the analyze (to the AI parse).
+        Body of method contain the simple logic:
+        - request.body contain the id ("`file_id`") of the user file.
+        - we got id and  create a new line to the "`IntermediateFilesModel`" of db.
+        - then, we will send a signal to the AI - that is time download the file by the refer key.
+        - and start of celery task - that begin is - follow by condition:
+            > the total time of live  for a refer key is 90 second.
+            > and avery 10 minutes the refer key will be updated.
+            > and the one file can use only 10 users.
+        Note: From "`FileReadOnlyModel`", AI can download.
         :param request:
         :param args:
         :param kwargs:
@@ -142,6 +149,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # тут отправляем GET запрос на AI + refer в URL-е
                 # ----------------------------------------
                 # -------------- START THE CELERY --------
+                # The django's signal can use for the time then start the 'start_rotation'.
                 try:
                     start_rotation.delay(serializer.data["upload"])
                 except Exception as e:

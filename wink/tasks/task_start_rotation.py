@@ -64,11 +64,9 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     if inter_pk is None:
         log.info("start_rotation called with inter_pk=None")
         return False
-    log.info("[%s]BEFORE including to the 'get_redis_client()' ", (__name__))
+
     r = get_redis_client()
-    log.info("[%s]AFTER including to the 'get_redis_client()' ", (__name__))
     lock_key = RUN_LOCK_KEY.format(inner_pk=inter_pk)
-    log.info("[%s]'lock_key'' ", (__name__))
     stop_key = STOP_FLAG_KEY.format(inner_pk=inter_pk)
     rotator_mark = ROTATION_MARK_KEY.format(inner_pk=inter_pk)
 
@@ -98,10 +96,17 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
         file_pk = inst.upload
         count_key = ACTIVE_COUNT_KEY.format(file_pk=file_pk)
         try:
+            # --------- REDIS incr ---------
+            # https://redis-docs.ru/commands/incr/
+            # Increments the number stored at key by one. If the key does not exist, it is set to 0 before performing the operation
             count = r.incr(count_key)
+            # ------------------------------
             if count == 1:
+                # --------- REDIS expire -------
+                # https://redis-docs.ru/commands/expire/
                 # This setting  TTL to duration + some buffer so stale counters axpire
                 r.expire(count_key, duration + 60)
+                # ------------------------------
         except Exception:
             log.exception("Redis incr failed for file_pk=%s", file_pk)
             r.delete(lock_key)
