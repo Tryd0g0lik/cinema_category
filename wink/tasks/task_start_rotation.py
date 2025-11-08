@@ -60,6 +60,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     :param int duration:  This is a max quantity of seconds for rotating the 'refer'.
     :return:
     """
+    log.info("[%s]Starting rotator for inter_pk=%s", (__name__, inter_pk))
     if inter_pk is None:
         log.info("start_rotation called with inter_pk=None")
         return False

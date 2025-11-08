@@ -21,8 +21,8 @@ from project.settings import POSTGRES_HOST
 
 # broker_url = f"redis://{master_host}:{master_port}/0"
 # result_backend = f"redis://{master_host}:{master_port}/0"
-broker_url = "redis://83.166.245.209:6379/1"
-result_backend = "redis://83.166.245.209:6379/1"
+broker_url = "redis://83.166.245.209:6379/0"
+result_backend = "redis://83.166.245.209:6379/0"
 task_serializer = "json"
 result_serializer = "json"
 accept_content = ["json"]
@@ -37,6 +37,7 @@ broker_transport_options = {
     "socket_connect_timeout": 30,  # Таймаут подключения
     "retry_on_timeout": True,  # Повтор при таймауте
     "max_retries": 3,  # Максимальное количество попыток
+    "socket_keepalive": True,
 }
 
 worker_concurrency = 1

@@ -146,7 +146,7 @@ networks:
             com.docker.network.driver.mtu: 1450 # Option from REG.ru
     database:
         driver: bridge
-        internal: true
+#        internal: true
         driver_opts:
             com.docker.network.driver.mtu: 1450 # Option from REG.ru
     queue:

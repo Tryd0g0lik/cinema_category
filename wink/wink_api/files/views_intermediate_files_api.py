@@ -143,9 +143,12 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # ----------------------------------------
                 # -------------- START THE CELERY --------
                 try:
-                    start_rotation.delay((serializer.data["upload"],))
+                    start_rotation.delay(serializer.data["upload"])
                 except Exception as e:
-                    log.error("[start_rotation]: ERROR => " + str(e))
+                    import traceback
+
+                    tb = traceback.format_exc()
+                    log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
                 # ----------------------------------------
                 serializer.data["refer"] = ""
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
