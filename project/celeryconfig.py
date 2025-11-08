@@ -1,0 +1,46 @@
+from redis.sentinel import Sentinel
+
+from project.settings import POSTGRES_HOST
+
+# s = Sentinel(
+#     [(f"{POSTGRES_HOST}", 26379), (f"{POSTGRES_HOST}", 26379)], socket_timeout=0.5
+# )
+# try:
+#     # Попробуйте найти мастер с разными именами
+#     master_host, master_port = s.discover_master("mymaster")
+# except:
+#     try:
+#         master_host, master_port = s.discover_master("redis-master")
+#     except:
+#         try:
+#             master_host, master_port = s.discover_master("wink_redis")
+#         except:
+#             # Если Sentinel не настроен, используем мастера напрямую
+#             master_host = POSTGRES_HOST
+#             master_port = 6379
+
+# broker_url = f"redis://{master_host}:{master_port}/0"
+# result_backend = f"redis://{master_host}:{master_port}/0"
+broker_url = "redis://83.166.245.209:6379/0"
+result_backend = "redis://83.166.245.209:6379/0"
+task_serializer = "json"
+result_serializer = "json"
+accept_content = ["json"]
+timezone = "Asia/Krasnoyarsk"
+enable_utc = True
+
+# Увеличиваем таймауты
+
+broker_transport_options = {
+    "visibility_timeout": 3600,  # 1 час
+    "socket_timeout": 3600,  # Таймаут сокета (в секундах)
+    "socket_connect_timeout": 30,  # Таймаут подключения
+    "retry_on_timeout": True,  # Повтор при таймауте
+    "max_retries": 3,  # Максимальное количество попыток
+    "socket_keepalive": True,
+}
+
+worker_concurrency = 1
+worker_prefetch_multiplier = 1
+task_track_started = True
+task_time_limit = 60 * 60 * 12

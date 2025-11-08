@@ -1,0 +1,36 @@
+name: wink_pages
+
+on:
+  push:
+    branches: ['dev']
+
+jobs:
+    deploy_wink:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version: [ '3.12' ]
+        steps:
+          # cache remove
+          - name: Clear GitHub Actions cache
+            run: rm -rf $HOME/.cache/actions
+
+    deploy_dev:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version: [ '3.12' ]
+        env:
+          DEPLOY_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_USER: ${{ secrets.SSH_USER }}
+          DEPLOY_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        needs: deploy_wink
+        steps:
+          - name: Deploy to GitHub Pages
+            uses: appleboy/ssh-action@master
+            with:
+              host: ${{ secrets.SSH_HOST }}
+              username: ${{ secrets.SSH_USER }}
+              password: ${{ secrets.SSH_PASSWORD }}
+              script: |
+                expect /home/denis/wink/pull.exp

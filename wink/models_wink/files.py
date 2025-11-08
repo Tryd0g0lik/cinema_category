@@ -14,33 +14,63 @@ from django.core.validators import (
     RegexValidator,
     MaxValueValidator,
 )
+from django.contrib.auth.models import User
 
-from project.settings import WAGTAILDOCS_EXTENSIONS
+from wink.models_wink.category_age import Quantity
+
+
+# from project.settings import WAGTAILDOCS_EXTENSIONS
 
 
 class FilesModel(models.Model):
+    """
+    Сюда получаем файл
+    Доступный всем пользователям
+    """
+
     upload = models.FileField(
-        upload_to="uploads/files/%Y/%m/%d/",
-        unique=True,
-        db_column="file",
+        upload_to="upload/%Y/%m/%d/",
         help_text=_("Upload the file - pdf, docx"),
         verbose_name=_("File"),
-        validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
+        null=True,
+        blank=True,
+        # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
     )
-
-
+    name = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+    )
+    size = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(0),
+        ],
+    )
 
     class Meta:
         verbose_name = _("File")
         verbose_name_plural = _("Files")
-        db_table = "files"
-        unique_together = ("upload",)
+        db_table = "wink_files"
 
     def __str__(self):
         return self.upload.name
 
+    def save(self, *args, **kwargs):
+        if self.upload:
+            self.name = self.upload.name.split("/")[-1]
+            self.size = self.upload.size
+        return super().save(*args, **kwargs)
 
-class IntermediateFilesModel(models.Model):
+
+class IntermediateFilesModel(Quantity):
+    """ "
+    отправляем файл на анализ
+    АШ скачивает файл
+    по запросу запускаем задали celery и делаем рефер
+    """
+
     upload = models.ForeignKey(
         FilesModel,
         on_delete=models.CASCADE,
@@ -50,7 +80,7 @@ class IntermediateFilesModel(models.Model):
         related_name="loaded_files",
     )
     user = models.ForeignKey(
-        "UserModel",
+        User,
         on_delete=models.CASCADE,
         verbose_name=_("User"),
         db_column="user_id",
@@ -66,10 +96,11 @@ class IntermediateFilesModel(models.Model):
             help_text=_("Created at"),
             db_column="created_at",
             validators=[
-                RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+                # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
             ],
         ),
     )
+
     updated_at = (
         models.DateField(
             auto_now=True,
@@ -85,14 +116,22 @@ class IntermediateFilesModel(models.Model):
         verbose_name=_("Reference"),
         editable=False,
         db_column="refer",
+        max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
+    )
+
+    violations = models.ManyToManyField(
+        "BasisViolation",
+        blank=True,
+        verbose_name=_("Violations"),
+        db_column="violations",
+        help_text=_("Violations - the views of violations"),
     )
 
     class Meta:
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
-        db_table = "intermediate_files"
-        unique_together = ("upload",)
+        db_table = "wink_intermediate_files"
 
     def __str__(self):
-        return f' File Id: {self.upload} was created at {self.created_at}.'
+        return f" File Id: {self.upload} was created at {self.created_at}."

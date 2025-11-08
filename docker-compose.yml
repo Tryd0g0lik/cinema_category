@@ -1,0 +1,159 @@
+services:
+    db:
+        container_name: postgres_app
+        image: postgres
+        env_file: ./.env
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        restart: unless-stopped
+        healthcheck:
+            test: [ 'CMD-SHELL', 'pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        ports:
+            - "5432:5432"
+        networks:
+            - database
+#    command: |
+#  bash -c "
+#    docker-entrypoint.sh postgres &
+#    until pg_isready -U $$POSTGRES_USER; do sleep 1; done;
+#    for db in \$$(echo $$POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
+#      psql -U $$POSTGRES_USER -c \"CREATE DATABASE \\\"\$$db\\\";\"
+#      psql -U $$POSTGRES_USER -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"\$$db\\\" TO \\\"$$POSTGRES_USER\\\";\"
+#    done
+#    wait
+#  "
+        # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
+        volumes:
+            - postgres_data:/var/lib/postgresql/18/data
+            - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+
+    backend:
+        container_name: app
+        build:
+            dockerfile: ./Dockerfile
+            context: .
+        env_file: ./.env
+        command:
+            - bash
+            - -c
+            - |
+                python3 ./manage.py shell -c "
+                print( 'Ждем пока БД будет готова')
+                until pg_isready -h db -p 5432 -U $$POSTGRES_USER; do
+                  print('Waiting for database...')
+                  sleep 2
+                done
+
+                prin('Database is ready! Starting migrations...')
+                "
+                
+                python3 ./manage.py makemigrations
+                python3 ./manage.py migrate
+                python3 ./manage.py collectstatic --clear --noinput
+                python3 ./manage.py shell -c "
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                if not User.objects.filter(username='root').exists():
+                    User.objects.create_superuser('root', 'admin@example.com', '123')
+                    print('Superuser root created successfully')
+                else:
+                    print('Superuser root already exists')
+                "
+                python3 ./manage.py load_violations
+                daphne -b 0.0.0.0 -p 8000 project.asgi:application
+
+        volumes:
+            - ./:/www/src
+            - volume_static:/www/src/collectstatic
+        depends_on:
+            - db
+        ports:
+            - "8000:8000"
+        networks:
+            - database
+            - backend
+    nginx:
+        container_name: nginx_app
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        depends_on:
+            - backend
+            - db
+        volumes:
+            - volume_static:/www/src/collectstatic
+        restart: on-failure
+        ports:
+            - "80:80"
+        networks:
+            - backend
+            - database
+    celery:
+        container_name: celery_app
+        build:
+            context: .
+            dockerfile: ./Dockerfile  # Тот же Dockerfile, что и для backend
+        env_file: ./.env
+        command:
+            - sh
+            - -c
+            - "celery -A project.celery worker --loglevel=info"
+
+        volumes:
+            - .:/www/src
+        depends_on:
+            - db
+            - redis
+        restart: unless-stopped
+        networks:
+            - queue
+            - backend
+            - database
+    redis:
+        container_name: wink_redis
+        image: redis:7.2-alpine
+        command: redis-server --appendonly yes --bind 0.0.0.0
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+        volumes:
+            - redis_data:/data
+        #depends_on:
+            #-
+        ports:
+            -   "6379:6379"
+        restart: unless-stopped
+        networks:
+            - queue
+
+volumes:
+    redis_data:
+    volume_static:
+    postgres_data:
+
+networks:
+    backend:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    database:
+        driver: bridge
+#        internal: true
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    queue:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru
+    frontend:
+        driver: bridge
+        driver_opts:
+            com.docker.network.driver.mtu: 1450 # Option from REG.ru

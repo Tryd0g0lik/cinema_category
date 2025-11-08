@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
-
+from django.utils.translation import gettext_lazy as _
 # .env
 load_dotenv()
 SECRET_KEY_DJ = os.getenv("SECRET_KEY_DJ", "")
@@ -26,7 +27,7 @@ APP_PORT = os.getenv("APP_PORT", "")
 APP_TIME_ZONE = os.getenv("APP_TIME_ZONE", "")
 
 # db production
-POSTGRES_DB = os.getenv("POSTGRES_DB", "")
+POSTGRES_MULTIPLE_DATABASES = os.getenv("POSTGRES_MULTIPLE_DATABASES", "")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
 
@@ -38,9 +39,28 @@ DB_ENGINE = os.getenv("DB_ENGINE", "")
 DATABASE_ENGINE_LOCAL = os.getenv("DATABASE_ENGINE_LOCAL", "")
 DATABASE_LOCAL = os.getenv("DATABASE_LOCAL", "")
 
+# jwt
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES = os.getenv("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", 5)
+JWT_REFRESH_TOKEN_LIFETIME_DAYS = os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1)
+
 #file extension
 f_extension = "pdf, docx"
 
+# wink age's category
+AGE_RATING_CHOICES = [
+    ("0+", _("Без возрастных ограничений")),
+    ("6+", _("От 6 лет")),
+    ("12+", _("От 12 лет")),
+    ("16+", _("От 16 лет")),
+    ("18+", _("Совершеннолетним")),
+]
+
+COMPLIANCE_LEVEL_RATING_CHOICES = [
+    ("None", _("Соответствует")),
+    ("mild", _("Незначительное нарушение")),
+    ("moderate", _("Существенное нарушение")),
+    ("severe", _("Грубое нарушение")),
+]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,15 +70,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = f"{SECRET_KEY_DJ}"
+SECRET_KEY = f"{SECRET_KEY_DJ}".strip()
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    f"{APP_HOST_REMOTE}",
+    f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
 ]
 
@@ -67,12 +87,12 @@ ALLOWED_HOSTS = [
 
 DATABASES = {
     "default": {
-        'ENGINE': f'{DB_ENGINE}',
-        'NAME': f'{POSTGRES_DB}',
-        'USER': f'{POSTGRES_USER}',
-        'PASSWORD': f"{POSTGRES_PASSWORD}",
-        'HOST': f'{POSTGRES_HOST}',
-        'PORT': f'{POSTGRES_PORT}',
+        'ENGINE': f'{DB_ENGINE}'.strip(),
+        'NAME': f'{POSTGRES_MULTIPLE_DATABASES}'.strip(),
+        'USER': f'{POSTGRES_USER}'.strip(),
+        'PASSWORD': f"{POSTGRES_PASSWORD}".strip(),
+        'HOST': f'{POSTGRES_HOST}'.strip(),
+        'PORT': f'{POSTGRES_PORT}'.strip(),
         "KEY_PREFIX": "drive_",  # it's my prefix for the keys
     }
 }
@@ -91,15 +111,11 @@ if DEBUG:
     # DB
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR /  "truckdriver_db.sqlite3",
+        "NAME": BASE_DIR /  "wink_db.sqlite3",
     }
     ALLOWED_HOSTS.pop(0)
 
-
-
-# Application definition
-
-# Application definition
+# APPLICATION DEFINITION
 INSTALLED_APPS = [
     "daphne",
     'wagtail.contrib.forms',
@@ -117,7 +133,7 @@ INSTALLED_APPS = [
     'taggit',
     'modelcluster',
     'rest_framework',
-    'drf_spectacular',
+    # 'drf_spectacular',
     'corsheaders',
     'drf_yasg',
     'adrf',
@@ -129,13 +145,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "person",
+    # "person",
     "wink",
 ]
 
 
 MIDDLEWARE = [
-    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
+
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -143,8 +159,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "wink.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
 ]
 
 ROOT_URLCONF = "project.urls"
@@ -173,7 +191,7 @@ ASGI_APPLICATION = "project.asgi.application"
 
 
 
-# Password validation
+# PASSWORD VALIDATION
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -191,7 +209,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# hash passwords
+# HASH passwords
 # https://docs.djangoproject.com/en/4.2/topics/auth/passwords/
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
@@ -203,12 +221,12 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
-# Internationalization
+# INTERNATIONALIZATION
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = "ru"
 
-TIME_ZONE = f"{APP_TIME_ZONE}"
+TIME_ZONE = f"{APP_TIME_ZONE.strip()}"
 
 USE_I18N = True
 
@@ -218,7 +236,7 @@ DATE_FORMAT = 'd.m.Y'
 DATETIME_FORMAT = 'd.m.Y H:i'
 USE_L10N = False
 
-# Static files (CSS, JavaScript, Images)
+# STATIC FILES (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -236,16 +254,18 @@ STATIC_URL = 'static/'
 # https://whitenoise.readthedocs.io/en/stable/django.html
 WHITENOISE_MAX_AGE = 31536000  # static cache by 1 year
 WHITENOISE_USE_FINDERS = True
-WAGTAILDOCS_EXTENSIONS = f_extension.split(", "),# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+WAGTAILDOCS_EXTENSIONS = list(f_extension.split(", "))# ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'media/'
+
+# Options for file's repository/source
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-# DEFAULT_AUTO_FIELD = "django.db.models_views.BigAutoField"
+
 DEFAULT_CHARSET = "utf-8"
-AUTH_USER_MODEL = "person.UserModel"
 
 # '''Cookie'''
 SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
@@ -258,17 +278,11 @@ SESSION_COOKIE_AGE = 86400
 CORS_ORIGIN_ALLOW_ALL = True
 # Here, we allow the URL list for publicated
 CORS_ALLOWED_ORIGINS = [
-    f"http://{APP_HOST_REMOTE}:8000",
+    f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
 ]
 
-# https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file#csrf-integration
-# https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
-# This is list from private of URL
-CSRF_TRUSTED_ORIGINS = [
-    f"http://{APP_HOST_REMOTE}:8000",
-    "http://127.0.0.1:8000",
-    ]
+
 # Allow the cookie in HTTP request.
 CORS_ALLOW_CREDENTIALS = True
 # Allow the methods to the methods in HTTP
@@ -295,17 +309,37 @@ CORS_ALLOW_HEADERS = [
     "Content-Language"
 ]
 
-"""REST_FRAMEWORK SETTINGS AND JWT-tokens"""
+# """CSRF""
+# https://github.com/adamchainz/django-cors-headers?tab=readme-ov-file#csrf-integration
+# https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-CSRF_TRUSTED_ORIGINS
+# This is list from private of URL
+CSRF_COOKIE_AGE = 1800 # seconds This is the time live of token (in COOKIE)
+CSRF_TRUSTED_ORIGINS = [
+    f"http://{APP_HOST_REMOTE.strip()}:8000",
+    "http://127.0.0.1:8000",
+    ]
+# """REST_FRAMEWORK SETTINGS AND JWT-tokens"""
 # https://pypi.org/project/djangorestframework-simplejwt/4.3.0/
 # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/stateless_user_authentication.html
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # This for works with sessions
         'rest_framework.authentication.TokenAuthentication',   # Options for API
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes = int(JWT_ACCESS_TOKEN_LIFETIME_MINUTES)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=int(JWT_REFRESH_TOKEN_LIFETIME_DAYS)),
+    "SIGNING_KEY": SECRET_KEY,
+}
+
+#"""DEBUG TOOLBAR - SERVER DAPHNE"""
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+}
 
 # '''WEBPACK_LOADER'''
 WEBPACK_LOADER = {
@@ -374,12 +408,8 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-
-# WAGTAIL
-
-
-# WAGTAIL
-WAGTAIL_SITE_NAME = 'FLOWS'
+# '''WAGTAIL'''
+WAGTAIL_SITE_NAME = 'WINK_CINEMA'
 # Replace the search backend
 WAGTAILSEARCH_BACKENDS = {
  'default': {
@@ -388,3 +418,8 @@ WAGTAILSEARCH_BACKENDS = {
  }
 }
 WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
+
+
+# '''CELERY'''
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 60 * 60 * 12
