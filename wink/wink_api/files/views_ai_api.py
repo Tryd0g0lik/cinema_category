@@ -8,6 +8,7 @@ import logging
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, permissions
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -27,8 +28,8 @@ class FileReadOnlyModel(views.APIView):
 
     @swagger_auto_schema(
         operation_description="""
-        Событие от AI - получает файл для парсинг файла.
-        HTTP Method is 'GET http://127.0.0.1:8000/api/v1/wink/download/<str:id>/'.
+        `Событие от AI` - получает файл для парсинг файла.
+        HTTP Method is 'GET http://127.0.0.1:8000/api/v1/wink/download/<str:refer>/'.
         '<str:id>' it's the refer key of file.
         From `**kwargs` we get the two variables:
          - kwargs['id'] is the refer file's key - the type string;
@@ -36,7 +37,7 @@ class FileReadOnlyModel(views.APIView):
          **``NOT`: How can we send a signal for user if the refer key is not found in the db !!!** This is we can see the status code 404.
         """,
         method="GET",
-        tags=["download"],
+        tags=["ai"],
         manual_parameters=[
             openapi.Parameter(
                 "refer",
@@ -62,12 +63,8 @@ class FileReadOnlyModel(views.APIView):
                         description="Attachment header with filename",
                     ),
                     "X-User-ID": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="User ID For example headers['X-User-ID'] == 7",
-                    ),
-                    "X-File-ID": openapi.Schema(
-                        type=openapi.TYPE_STRING,
-                        description="File ID For example headers['X-File-ID'] == 3",
+                        type=openapi.TYPE_INTEGER,
+                        description="User ID For example `headers['X-User-ID'] == 7`",
                     ),
                 },
             ),
@@ -75,6 +72,7 @@ class FileReadOnlyModel(views.APIView):
             status.HTTP_500_INTERNAL_SERVER_ERROR: '{"errors": "ERROR => [error description]"}',
         },
     )
+    @api_view(["GET"])
     async def get(self, request, *args, **kwargs):
         # async def retrieve(self, request, *args, **kwargs):
         """
@@ -120,7 +118,6 @@ class FileReadOnlyModel(views.APIView):
                 f'attachment; filename="{os.path.basename(file_path)}"'
             )
             response.headers["X-User-ID"] = user_id
-            response.headers["X-File-ID"] = file_id
             # -------------- START THE CELERY --------
             # The django's signal can use for the time then start the 'start_rotation'.
             try:
@@ -137,3 +134,47 @@ class FileReadOnlyModel(views.APIView):
                 {"errors": f"ERROR => {e.args[0]}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @swagger_auto_schema(
+        operation_description="""
+        `Событие от AI` - AI отправляет результат анализа файла в db.
+        HTTP Method is POST http://127.0.0.1:8000/api/v1/wink/raport/
+        `Note:` В разработке
+        """,
+        method="POST",
+        tags=["ai"],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["refer", "user_id"],
+            properties={
+                "user_id": openapi.Schema(
+                    openapi.IN_BODY,
+                    description="User ID which was got to the method 'GET' from API's request's `HEADERS['X-User-ID']`",
+                    type=openapi.TYPE_INTEGER,
+                ),
+                "refer": openapi.Schema(
+                    openapi.IN_BODY,
+                    description="Refer key which was got to the method 'GET .../api/v1/wink/download/<str:refer>/' from API's URL pathname. ",
+                    type=openapi.TYPE_INTEGER,
+                ),
+            },
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "X-CSRFToken",
+                openapi.IN_HEADER,
+                description="The X-CSRFToken header. Token 'csrftoken you cant take from the cookie or to look the API's tage 'csrf'",
+                required=True,
+                type=openapi.TYPE_STRING,
+            )
+        ],
+        responses={200: "в разработке"},
+    )
+    @api_view(
+        [
+            "POST",
+        ]
+    )
+    def post(self, request, *args, **kwargs):
+        user_id = kwargs.get("user_id")
+        refer_key = kwargs.get("refer_key")

@@ -11,7 +11,7 @@ from wink.wink_api.files.views_intermediate_files_api import IntermediateFilesVi
 
 
 from wink.csrftoken import CSRFTokenView
-from wink.wink_api.files.views_readOnly_files_api import FileReadOnlyModel
+from wink.wink_api.files.views_ai_api import FileReadOnlyModel
 from wink.wink_api.violations.views_violations_api import BasisViolationViewSet
 
 router = routers.DefaultRouter()

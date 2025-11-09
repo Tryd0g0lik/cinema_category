@@ -28,7 +28,7 @@ class FilesViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_description="""
-        Событие от пользователя - загрузил файл на сервер.
+        `Событие от` пользователя - загрузил файл на сервер.
         This method record meta-data about files and the 'upload' field is do empty. It's for the main flow.
             Then, It create the new thread and inside of thread it upload the file to the server by server's path '`media/upload/%Y/%m/%d/file_name.{pdf|docx}`'
             Then, column '`upload`' is updating from the last row's empty in the database.

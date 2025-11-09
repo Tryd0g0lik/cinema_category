@@ -22,7 +22,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_description="""
-            Событие от пользователя - отправляет файл парсинг.
+            `Событие от` пользователя - отправляет файл парсинг.
             That is get the data from request and save them.
             Then send a signal on AI for would be to begin load (parsing) the file
         """,
