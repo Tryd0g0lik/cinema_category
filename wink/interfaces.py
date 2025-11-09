@@ -4,7 +4,10 @@ wink/interfaces.py
 This file is the analogue for 'interfaces.ts' of file from Typescript.
 """
 
-from typing import Union, TypedDict, NotRequired, List
+from typing import TypedDict, TypeVar
+from django.views import View
+from adrf.viewsets import ModelViewSet
+from adrf.views import APIView
 
 
 class FileUpload(TypedDict):
@@ -29,3 +32,9 @@ class Intermediate(TypedDict):
     refer: str
     created_at: str
     updated_at: str
+
+
+# wink/wink_api/upload_files.py
+A = TypeVar("A", bound=View)
+B = TypeVar("B", bound=APIView)
+C = TypeVar("C", bound=ModelViewSet)

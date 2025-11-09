@@ -34,7 +34,7 @@ class FilesModel(models.Model):
         verbose_name=_("File"),
         null=True,
         blank=True,
-        # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)],
+        # validators=[FileExtensionValidator(allowed_extensions=WAGTAILDOCS_EXTENSIONS)]
     )
     name = models.CharField(
         max_length=150,

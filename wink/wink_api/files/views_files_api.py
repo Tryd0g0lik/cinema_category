@@ -15,26 +15,10 @@ from wink.models_wink.files import (
     FilesModel,
 )
 from logs import configure_logging
-
+from wink.wink_api.upload_files import handle_uploaded_file
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
-
-
-async def handle_uploaded_file(path: str, f, index: int):
-    """
-    :param str path:
-    :param f: it from django's 'request.FILES["upload"]'
-    :param int index:
-    :return: void
-    """
-    with open(path, "wb+") as destination:
-        for chunk in f.chunks(10 * 1024 * 1024):
-            destination.write(chunk)
-    path = path.split("upload")[1].replace("\\", "/")
-    f_oblect = await asyncio.to_thread(lambda: FilesModel.objects.get(id=index))
-    f_oblect.upload = f"upload{path}"
-    await f_oblect.asave()
 
 
 class FilesViewSet(viewsets.ModelViewSet):
@@ -78,7 +62,12 @@ class FilesViewSet(viewsets.ModelViewSet):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=12)
+                        "id_file": openapi.Schema(
+                            type=openapi.TYPE_INTEGER, example=12
+                        ),
+                        "id_user": openapi.Schema(
+                            type=openapi.TYPE_INTEGER, example=12
+                        ),
                     },
                 ),
             ),
@@ -93,6 +82,7 @@ class FilesViewSet(viewsets.ModelViewSet):
             __class__.__name__,
             self.create.__name__,
         )
+        user = request.user
         file = request.FILES["upload"]
         serializer = self.get_serializer(data=request.data)
         is_valid = serializer.is_valid()
@@ -140,7 +130,7 @@ class FilesViewSet(viewsets.ModelViewSet):
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     loop.run_until_complete(
-                        handle_uploaded_file(upload_dir, file, f_object.id)
+                        handle_uploaded_file(upload_dir, file, f_object.id, FilesModel)
                     )
 
                 # OPEN NEW THREAD
@@ -156,4 +146,7 @@ class FilesViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({"error": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(data={"id": f_object.id}, status=status.HTTP_201_CREATED)
+        return Response(
+            data={"id_file": f_object.id, "id_user": user.id},
+            status=status.HTTP_201_CREATED,
+        )

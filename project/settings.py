@@ -46,8 +46,10 @@ JWT_REFRESH_TOKEN_LIFETIME_DAYS = os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1
 #file extension
 f_extension = "pdf, docx"
 
+
 # wink age's category
 AGE_RATING_CHOICES = [
+    ("----", _("Не учьтено")),
     ("0+", _("Без возрастных ограничений")),
     ("6+", _("От 6 лет")),
     ("12+", _("От 12 лет")),
@@ -56,6 +58,7 @@ AGE_RATING_CHOICES = [
 ]
 
 COMPLIANCE_LEVEL_RATING_CHOICES = [
+    ("----", _("Не учьтено")),
     ("None", _("Соответствует")),
     ("mild", _("Незначительное нарушение")),
     ("moderate", _("Существенное нарушение")),
@@ -75,7 +78,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     f"{APP_HOST_REMOTE}".strip(),

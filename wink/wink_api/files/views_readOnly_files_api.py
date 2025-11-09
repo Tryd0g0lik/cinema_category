@@ -1,28 +1,26 @@
 import asyncio
 import os.path
 
-from adrf import viewsets
+from adrf import views
 import logging
 
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from rest_framework.request import Request
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
-from wink.wink_api.files.serialisers import IntermediateFilesSerializer
 from wink.tasks.task_start_rotation import stop_rotation
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
 
 
-class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
-    queryset = IntermediateFilesModel.objects.all()
-    serializer_class = IntermediateFilesSerializer
+class FileReadOnlyModel(views.APIView):
+    # queryset = IntermediateFilesModel.objects.all()
+    # serializer_class = IntermediateFilesSerializer
     permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
@@ -65,7 +63,8 @@ class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
             500: '{"errors": "ERROR => [error description]"}',
         },
     )
-    async def retrieve(self, request, *args, **kwargs):
+    async def get(self, request, *args, **kwargs):
+        # async def retrieve(self, request, *args, **kwargs):
         """
         тут от меня начинают скачивать
         :param request:
@@ -73,7 +72,7 @@ class FileReadOnlyModel(viewsets.ReadOnlyModelViewSet):
         :param kwargs:
         :return:
         """
-        error_test = "[%s.%s]:" % (__class__.__name__, self.retrieve.__name__)
+        error_test = "[%s.%s]:" % (__class__.__name__, self.get.__name__)
 
         pk = kwargs.get("pk")
         try:

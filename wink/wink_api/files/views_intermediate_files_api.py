@@ -56,12 +56,15 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                         "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=7),
                         "violations_quantity": openapi.Schema(
                             type=openapi.TYPE_INTEGER,
-                            description="That is the static number and all the time this the variable will have the number 0",
+                            description="""
+                            It doesn't use,now. That is the static number and all the time this the variable will have the number 0.
+                            Basic goal is to provide the variable Where we can  insert a quantity of violations
+                            """,
                             example=0,
                         ),
                         "upload": openapi.Schema(
                             type=openapi.TYPE_INTEGER,
-                            description="That is the index of file. It will be send to the parser.",
+                            description="That is the index of file (refer key). It will be send to the parser.",
                             example=7,
                         ),
                         "user": openapi.Schema(
@@ -69,7 +72,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                             description="That is the index of user. This user who sent the one file to the parser.",
                         ),
                         "violations": openapi.Schema(
-                            description="This is array from everything of violations - total list. Swagger key is 'violations' ",
+                            description="This is array from any of violations - total list for determine violations as a static title. Swagger key is 'violations' ",
                             type=openapi.TYPE_ARRAY,
                             items=openapi.Schema(
                                 type=openapi.TYPE_INTEGER,
@@ -93,6 +96,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
     )
     def create(self, request, *args, **kwargs):
         """
+        IA событие - API URL в котором pathname содержит id (refer-key)
         descript :  This method is used when - user return file to the analyze (to the AI parse).
         Body of method contain the simple logic:
         - request.body contain the id ("`file_id`") of the user file.
