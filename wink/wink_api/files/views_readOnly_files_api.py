@@ -1,5 +1,6 @@
 import asyncio
 import os.path
+from tkinter.scrolledtext import example
 
 from adrf import views
 import logging
@@ -13,6 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.tasks.task_start_rotation import stop_rotation
+from wink.wink_api.views_api import set_cookie
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
@@ -22,16 +24,19 @@ class FileReadOnlyModel(views.APIView):
     # queryset = IntermediateFilesModel.objects.all()
     # serializer_class = IntermediateFilesSerializer
     permission_classes = [permissions.AllowAny]
+    COOKIE_DAY_EXPIRE = 1
 
     @swagger_auto_schema(
         operation_description="""
         Событие от AI - парсинг файла.
-        HTTP Method is '`GET`'.
+        HTTP Method is 'GET http://127.0.0.1:8000/api/v1/wink/download/<str:id>/'.
+        '<str:id>' it's the refer key of file.
         From `**kwargs` we get the two variables:
          - kwargs['id'] is the refer file's key - the type string;
          By this refer (only if we find the refer key in db) the our AI begin downloading the file.
          **``NOT`: How can we send a signal for user if the refer key is not found in the db !!!** This is we can see the status code 404.
         """,
+        method="GET",
         tags=["download"],
         manual_parameters=[
             openapi.Parameter(
@@ -46,21 +51,29 @@ class FileReadOnlyModel(views.APIView):
             ),
         ],
         responses={
-            200: openapi.Response(
+            status.HTTP_200_OK: openapi.Response(
                 description="File downloaded successfully",
                 schema=openapi.Schema(
                     type=openapi.TYPE_FILE,
                     description="The requested file for download and File will be  downloaded successfully",
                 ),
-                header={
+                headers={
                     "Content-Disposition": openapi.Schema(
                         type=openapi.TYPE_STRING,
                         description="Attachment header with filename",
-                    )
+                    ),
+                    "X-User-ID": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="User ID For example headers['X-User-ID'] == 7",
+                    ),
+                    "X-File-ID": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="File ID For example headers['X-File-ID'] == 3",
+                    ),
                 },
             ),
-            404: '{"errors": "[FileReadOnlyModel.retrieve]: ERROR => The refer is key did not found! Repeat the request"}',
-            500: '{"errors": "ERROR => [error description]"}',
+            status.HTTP_404_NOT_FOUND: '{"errors": "[FileReadOnlyModel.retrieve]: ERROR => The refer is key did not found! Repeat the request"}',
+            status.HTTP_500_INTERNAL_SERVER_ERROR: '{"errors": "ERROR => [error description]"}',
         },
     )
     async def get(self, request, *args, **kwargs):
@@ -74,7 +87,7 @@ class FileReadOnlyModel(views.APIView):
         """
         error_test = "[%s.%s]:" % (__class__.__name__, self.get.__name__)
 
-        pk = kwargs.get("pk")
+        pk = kwargs.get("pk")  # files's refer key
         try:
             intermediate_all = [
                 view async for view in IntermediateFilesModel.objects.filter(refer=pk)
@@ -98,7 +111,7 @@ class FileReadOnlyModel(views.APIView):
                     {"errors": f"{error_test} ERROR => The file invalid."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-
+            # RESPONSE
             file_path = file_obj.upload.path
             response = await asyncio.to_thread(
                 lambda: FileResponse(open(file_obj.upload.path, "rb"))
@@ -106,6 +119,8 @@ class FileReadOnlyModel(views.APIView):
             response["Content-Disposition"] = (
                 f'attachment; filename="{os.path.basename(file_path)}"'
             )
+            response.headers["X-User-ID"] = user_id
+            response.headers["X-File-ID"] = file_id
             # -------------- START THE CELERY --------
             # The django's signal can use for the time then start the 'start_rotation'.
             try:

@@ -65,6 +65,12 @@ COMPLIANCE_LEVEL_RATING_CHOICES = [
     ("severe", _("Грубое нарушение")),
 ]
 
+# '''Cookie'''
+SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True # change to the True - CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict'
+SESSION_COOKIE_AGE = 86400
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -270,11 +276,7 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 DEFAULT_CHARSET = "utf-8"
 
-# '''Cookie'''
-SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # change to the True - CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = "Lax"  # CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict'
-SESSION_COOKIE_AGE = 86400
+
 
 # '''CORS'''
 # False - this value is default and it's means what the server don't accept from other sources.
