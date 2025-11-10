@@ -55,7 +55,6 @@ class FilesViewSet(viewsets.ModelViewSet):
                 type=openapi.TYPE_STRING,
                 required=True,
             ),
-
         ],
         responses={
             200: openapi.Response(
@@ -83,7 +82,7 @@ class FilesViewSet(viewsets.ModelViewSet):
             __class__.__name__,
             self.create.__name__,
         )
-        age_target_audience = request.HEADERS.get("X-Age")
+        # age_target_audience = request.HEADERS.get("X-Age")
         user = request.user
         file = request.FILES["upload"]
         serializer = self.get_serializer(data=request.data)

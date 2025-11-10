@@ -22,7 +22,7 @@ from django.utils.translation import gettext_lazy as _
 from wink.models_wink.violations import Quantity
 
 
-class Comments(models.Model):
+class CommentsModel(models.Model):
     """
     Коменты от юзера, когда он отправляет данные из формы на анализ.
     Сохраняем комментарий пользоватя.
@@ -110,7 +110,7 @@ class Comments(models.Model):
         ordering = ["id"]
 
 
-class IntermediateViolationsComment(Quantity):
+class IntermediateCommentModel(Quantity):
     """
     Таблица связанная с AI,
     Рекомендации от AI
@@ -122,7 +122,7 @@ class IntermediateViolationsComment(Quantity):
     """
 
     comments_user = models.ForeignKey(
-        "Comments",
+        "CommentsModel",
         on_delete=models.CASCADE,
         verbose_name=_("Comments of user"),
         db_column="comments_user",
@@ -131,7 +131,7 @@ class IntermediateViolationsComment(Quantity):
         blank=True,
     )
     comments_ai = models.ForeignKey(
-        "Comments",
+        "CommentsModel",
         on_delete=models.CASCADE,
         verbose_name=_("Comments of user"),
         db_column="comments_ai",

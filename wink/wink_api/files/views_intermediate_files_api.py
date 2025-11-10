@@ -32,7 +32,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
         tage=["cinema"],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=["file_id"],
+            required=["file_id", "target_audience"],
             properties={
                 "file_id": openapi.Schema(
                     openapi.IN_BODY,
@@ -163,13 +163,12 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 serializer = self.get_serializer(intermediate_file)
                 # -------------- RECORDING USER COMMENT --
                 #  Here, we work with user comments - they, was sent to the AI parser process.
-                if comment & len(comment) > 0:
+                if comment is not None and len(comment) > 0:
                     from wink.apps import signal
 
                     kwargs = {
                         "user_id": user.id,
                         "comment": comment,
-                        # "target_audience":target_audience,
                         "file_id": file_id,
                         "author": "User",
                     }
