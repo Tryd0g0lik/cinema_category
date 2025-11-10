@@ -112,8 +112,9 @@ class Comments(models.Model):
 
 class IntermediateViolationsComment(Quantity):
     """
-    ТNаблица связанная с AI,
+    Таблица связанная с AI,
     Рекомендации от AI
+    Заполняется при наличии Рекомендаций от AI
     От AI в обратку приходит рефер.
     По реферу определяет комент ползователя к реккмендации к файлу
     По реферу определяет комент ползователя к комент от файла
@@ -125,7 +126,7 @@ class IntermediateViolationsComment(Quantity):
         on_delete=models.CASCADE,
         verbose_name=_("Comments of user"),
         db_column="comments_user",
-        related_name="comments_violations",
+        related_name="comments_user",
         null=True,
         blank=True,
     )
@@ -133,8 +134,8 @@ class IntermediateViolationsComment(Quantity):
         "Comments",
         on_delete=models.CASCADE,
         verbose_name=_("Comments of user"),
-        db_column="comments_user",
-        related_name="comments_violations",
+        db_column="comments_ai",
+        related_name="comments_ai",
         help_text=_("Recommendation comment of AI"),
     )
 
