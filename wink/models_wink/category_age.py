@@ -18,9 +18,16 @@ from wink.models_wink.violations import Quantity
 
 class Comments(models.Model):
     """
-    Коменты от юзера, когда он отправляет данные из формы на анализ
+    Коменты от юзера, когда он отправляет данные из формы на анализ.
+    Сохраняем комментарий пользоватя.
+    Когда пройдёт время и файл будет проанализирован - рекомендационный комментарий  сохраним в IntermediateViolationsComment.
     """
 
+    comment = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name=_("Comments"),
+    )
     refer = models.OneToOneField(
         # """"
         # Комментарий от пользователя указываем ДО отправления на анализ или
@@ -35,26 +42,15 @@ class Comments(models.Model):
         db_column="refer_file_uuid_id",
         related_name="refers",
     )
-    target_audience = models.CharField(
-        default=AGE_RATING_CHOICES[1],
-        choices=AGE_RATING_CHOICES,
-        max_length=100,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
-        help_text=_("Target audience of your document"),
-        verbose_name=_("Target Audience"),
-        db_column="target_audience",
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(100),
-        ],
-    )
-    author = models.ForeignKey(
-        "IntermediateFilesModel",
-        on_delete=models.CASCADE,
-        verbose_name=_("Author"),
-        db_column="author", # кто отправил документ
-        related_name="comments",
-        help_text=_("Who is uploading the document"),
-    )
+    #
+    # author = models.ForeignKey(
+    #     "IntermediateFilesModel",
+    #     on_delete=models.CASCADE,
+    #     verbose_name=_("Author"),
+    #     db_column="author", # кто отправил документ
+    #     related_name="comments",
+    #     help_text=_("Who is uploading the document"),
+    # )
     # reference_file = CharField(
     #     null=True,  # !!!!???
     #     blank=True,
@@ -64,18 +60,20 @@ class Comments(models.Model):
     #     help_text=_("Reference File - it's the pathname of file inside the server"),
     # )
     created_at = (
-        models.DateField(
-            blank=True,
-            null=True,
-            default=datetime.datetime.now,
-            verbose_name=_("Created at"),
-            help_text=_("Created at"),
-            db_column="created_at",
-            validators=[
-                # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
-            ],
+        (
+            models.DateField(
+                blank=True,
+                null=True,
+                default=datetime.datetime.now,
+                verbose_name=_("Created at"),
+                help_text=_("Created at"),
+                db_column="created_at",
+                validators=[
+                    # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+                ],
+            ),
         ),
-    ),
+    )
     updated_at = (
         models.DateField(
             auto_now=True,
@@ -84,6 +82,7 @@ class Comments(models.Model):
             db_column="updated_at",
         ),
     )
+
     class Meta:
         verbose_name = _("Comments")
         verbose_name_plural = _("Comments")
@@ -143,4 +142,27 @@ class IntermediateViolationsComment(Quantity):
         unique=True,
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
+    )
+    created_at = (
+        (
+            models.DateField(
+                blank=True,
+                null=True,
+                default=datetime.datetime.now,
+                verbose_name=_("Created at"),
+                help_text=_("Created at"),
+                db_column="created_at",
+                validators=[
+                    # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+                ],
+            ),
+        ),
+    )
+    updated_at = (
+        models.DateField(
+            auto_now=True,
+            verbose_name=_("Updated at"),
+            help_text=_("Past time when the file was updated"),
+            db_column="updated_at",
+        ),
     )

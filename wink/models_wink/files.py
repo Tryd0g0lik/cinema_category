@@ -16,6 +16,7 @@ from django.core.validators import (
 )
 from django.contrib.auth.models import User
 
+from project.settings import AGE_RATING_CHOICES
 from wink.models_wink.category_age import Quantity
 
 
@@ -48,6 +49,7 @@ class FilesModel(models.Model):
             MinValueValidator(0),
         ],
     )
+
     class Meta:
         verbose_name = _("File")
         verbose_name_plural = _("Files")
@@ -85,6 +87,21 @@ class IntermediateFilesModel(Quantity):
         db_column="user_id",
         help_text=_("Select the user id"),
         related_name="loaded_files",
+    )
+    target_audience = models.CharField(
+        default=AGE_RATING_CHOICES[1],
+        choices=AGE_RATING_CHOICES,
+        max_length=3,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
+        help_text=_("Target audience for the film script"),
+        verbose_name=_("Target Audience"),
+        db_column="target_audience",
+        validators=[
+            MinValueValidator(2),
+            MaxValueValidator(3),
+            RegexValidator(
+                regex=r"(^\d+\+$)",
+            ),
+        ],
     )
     created_at = (
         models.DateField(
@@ -126,19 +143,7 @@ class IntermediateFilesModel(Quantity):
         db_column="violations",
         help_text=_("Violations - the views of violations"),
     )
-    target_audience = models.CharField(
-        max_length=3,
-        default="0+",
-        help_text=_("Age of target audience - '0+' or '6+'"),
-        verbose_name=_("Audience"),
-        validators=[
-            MinValueValidator(2),
-            MaxLengthValidator(3),
-            RegexValidator(
-                regex=r"(^\d+\+$)",
-            )
-        ]
-    )
+
     class Meta:
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")
