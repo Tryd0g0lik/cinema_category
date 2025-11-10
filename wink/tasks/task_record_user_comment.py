@@ -50,7 +50,7 @@ def record_user_comment(sender, **kwargs):
     refer = intermediate_file.refer
     # ---------- COMMENT ----------
     if author.lower() == "User".lower():
-
+        # If the author == 'User'
         try:
             comments_user = Comments(refer=refer, comment=comment, author=author)
             comments_user.save()

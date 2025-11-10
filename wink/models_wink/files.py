@@ -17,7 +17,7 @@ from django.core.validators import (
 from django.contrib.auth.models import User
 
 from project.settings import AGE_RATING_CHOICES
-from wink.models_wink.category_age import Quantity
+from wink.models_wink.comments import Quantity
 
 
 # from project.settings import WAGTAILDOCS_EXTENSIONS
