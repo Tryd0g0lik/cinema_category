@@ -103,7 +103,7 @@ services:
         command:
             - sh
             - -c
-            - "celery -A project.celery worker --loglevel=info"
+            - "celery -A project.celery worker --loglevel=info -concurrency=2"
 
         volumes:
             - .:/www/src

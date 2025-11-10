@@ -75,7 +75,6 @@ class FileReadOnlyModel(views.APIView):
         },
     )
     def get(self, request, *args, **kwargs):
-        # async def retrieve(self, request, *args, **kwargs):
         """
         тут от меня начинают скачивать
         :param request:
@@ -100,7 +99,7 @@ class FileReadOnlyModel(views.APIView):
             file_id = intermediate_obj.upload.id
             file_target_audience = intermediate_obj.target_audience
             file_obj = FilesModel.objects.filter(id=file_id).first()
-            # # file_obj =
+
             if not file_obj.upload or not os.path.exists(file_obj.upload.path):
                 return Response(
                     {"errors": f"{error_test} ERROR => The file invalid."},

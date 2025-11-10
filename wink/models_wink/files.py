@@ -20,9 +20,6 @@ from project.settings import AGE_RATING_CHOICES
 from wink.models_wink.comments import Quantity
 
 
-# from project.settings import WAGTAILDOCS_EXTENSIONS
-
-
 class FilesModel(models.Model):
     """
     Сюда получаем файл

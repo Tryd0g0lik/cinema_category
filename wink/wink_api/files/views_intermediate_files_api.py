@@ -110,7 +110,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
         IA событие - API URL в котором pathname содержит id (refer-key)
-        descript :  This method is used when - user return file to the analyze (to the AI parse).
+         descript :  This method is used when - user return file to the analyze (to the AI parse).
         Body of method contain the simple logic:
         - request.body contain the id ("`file_id`") of the user file.
         - we got id and  create a new line to the "`IntermediateFilesModel`" of db.
@@ -120,6 +120,8 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             > and avery 10 minutes the refer key will be updated.
             > and the one file can use only 10 users.
         Note: From "`FileReadOnlyModel`", AI can download.
+        Note: ОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ иначе подится куаук/ На данный
+            момент, зпереименовать или ждать один день. После повторить загрузку.
         :param request:
         :param args:
         :param kwargs:
@@ -145,8 +147,20 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
         comment = request.data.get("comment")
         if file_id and file_id != "":
             try:
+
                 file = FilesModel.objects.filter(id=file_id)
                 all_violations = BasisViolation.objects.all()
+                intermediate_duplicate_file = IntermediateFilesModel.objects.filter(
+                    upload=file_id
+                )
+                if intermediate_duplicate_file.first():
+                    # ---- СОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ
+                    return Response(
+                        {
+                            "errors": "File is exists. Wait one day and upload again or rename file!"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 if len(file) == 0:
                     return Response(
                         {
@@ -154,6 +168,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                         },
                         status=status.HTTP_404_NOT_FOUND,
                     )
+
                 intermediate_file = IntermediateFilesModel.objects.create(
                     user=user,
                     upload=file.first(),
@@ -173,6 +188,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                         "author": "User",
                     }
                     signal.send(sender=self.create.__name__, **kwargs)
+                    log.info("Signal START & Sender: %s", (self.create.__name__,))
                 # ----------------------------------------
                 # refer = serializer.data["refer"].strip()
                 # -------------- AI REQUEST --------------
@@ -182,6 +198,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # The django's signal can use for the time then start the 'start_rotation'.
                 try:
                     start_rotation.delay(serializer.data["upload"])
+                    log.info("Celery START & File ID: %s", (serializer.data["upload"],))
                 except Exception as e:
                     import traceback
 

@@ -62,23 +62,7 @@ class CommentsModel(models.Model):
             ),
         ],
     )
-    #
-    # author = models.ForeignKey(
-    #     "IntermediateFilesModel",
-    #     on_delete=models.CASCADE,
-    #     verbose_name=_("Author"),
-    #     db_column="author", # кто отправил документ
-    #     related_name="comments",
-    #     help_text=_("Who is uploading the document"),
-    # )
-    # reference_file = CharField(
-    #     null=True,  # !!!!???
-    #     blank=True,
-    #     max_length=100,  # локальная ссылка на файл (поступивший из фронта) !! Но есть промежуточная таблица с файлами
-    #     verbose_name=_("Reference File"),
-    #     db_column="reference_file",
-    #     help_text=_("Reference File - it's the pathname of file inside the server"),
-    # )
+
     created_at = (
         (
             models.DateField(
@@ -88,9 +72,7 @@ class CommentsModel(models.Model):
                 verbose_name=_("Created at"),
                 help_text=_("Created at"),
                 db_column="created_at",
-                validators=[
-                    # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
-                ],
+                validators=[],
             ),
         ),
     )
@@ -138,26 +120,6 @@ class IntermediateCommentModel(Quantity):
         related_name="comments_ai",
         help_text=_("Recommendation comment of AI"),
     )
-
-    # violations = models.ForeignKey(
-    #     "BasisViolation",  # берём классы нарушений и комент к ним (статичный) Как рекоментация от AI
-    #     verbose_name=_("Violations"),
-    #     on_delete=models.CASCADE,
-    #     db_column="violations",  # Какие классы брать - это смотрим в поступивший результат анализа от AI
-    #     help_text=_("Violations - the views of violations"),
-    #     related_name="comments_violations",
-    # )
-    # comment_recommendation = (
-    #     models.TextField(
-    #         null=True,  # РеКомендации от AI
-    #         blank=True,
-    #         help_text=_("Recommendation comment of AI"),
-    #         verbose_name=_("Recommend"),
-    #         db_column="recommend",
-    #         validators=[],
-    #     ),
-    # )
-
     rating = models.CharField(
         default=COMPLIANCE_LEVEL_RATING_CHOICES[0],
         choices=COMPLIANCE_LEVEL_RATING_CHOICES,

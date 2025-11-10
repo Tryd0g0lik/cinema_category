@@ -1,8 +1,6 @@
 from django.db import models
 from django.core.validators import (
-    FileExtensionValidator,
     MinValueValidator,
-    MaxLengthValidator,
     RegexValidator,
     MaxValueValidator,
 )
