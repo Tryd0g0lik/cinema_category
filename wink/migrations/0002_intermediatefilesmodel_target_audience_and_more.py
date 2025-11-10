@@ -17,10 +17,10 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 default="0+",
                 help_text="Age of target audience - '0+' or '6+'",
-                max_length=3,
+                max_length=10,
                 validators=[
                     django.core.validators.MinValueValidator(2),
-                    django.core.validators.MaxLengthValidator(3),
+                    django.core.validators.MaxLengthValidator(10),
                     django.core.validators.RegexValidator(regex="(^\\d+\\+$)"),
                 ],
                 verbose_name="Audience",

@@ -91,13 +91,13 @@ class IntermediateFilesModel(Quantity):
     target_audience = models.CharField(
         default=AGE_RATING_CHOICES[1],
         choices=AGE_RATING_CHOICES,
-        max_length=3,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
+        max_length=5,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
         help_text=_("Target audience for the film script"),
         verbose_name=_("Target Audience"),
         db_column="target_audience",
         validators=[
             MinValueValidator(2),
-            MaxValueValidator(3),
+            MaxValueValidator(5),
             RegexValidator(
                 regex=r"(^\d+\+$)",
             ),
