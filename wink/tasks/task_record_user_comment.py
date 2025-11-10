@@ -22,10 +22,16 @@ IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 
 def record_user_comment(sender, **kwargs):
     """
+    Если на входе указали:
+     1) author = "User": просто сохраняем в таблице "Comment".
+     2) author = "AI":
+        2.1) Смотрим - оставлял пользователь комментарии раньше или нет. Если не оставлял , то переменая 'user_last_comment_id'имеет None.
+        Иначе из последнего комментария получаем объект/образ комментария.
     description: Here, we work with user comments - they, was sent to the AI parser process.
     - kwargs["user_id"] is the user id who sent the comment from web-page.
     - kwargs["comment"] it's the user comment.
     # - kwargs["target_audience"] is the target audience of the film script.
+    - kwargs["author"] is  the 'AI' or 'User'
     - kwargs["file_id"] is the file id of the film script.
     :param sender:
     :param kwargs:
@@ -35,26 +41,46 @@ def record_user_comment(sender, **kwargs):
     comment = kwargs["comment"]
     # target_audience = kwargs["target_audience"]
     file_id = kwargs["file_id"]
+
+    author = kwargs["author"]
     if not user_id or not comment or not file_id:
         return
 
     intermediate_file = IntermediateFilesModel.objects.get(pk=file_id)
     refer = intermediate_file.refer
     # ---------- COMMENT ----------
-    try:
-        comments = Comments(refer=refer, comment=comment)
-        comments.save()
-        log.info(
-            "[%s]: Comment recorded for user %s: %s",
-            (record_user_comment.__name__, user_id, comment[:15]),
-        )
-    except Exception as e:
-        log.error(
-            "[%s]:  for user %s Error =>  %s",
-            (record_user_comment.__name__, user_id, e.args[0]),
-        )
-        return
+    if author.lower() == "User".lower():
 
+        try:
+            comments_user = Comments(refer=refer, comment=comment, author=author)
+            comments_user.save()
+            log.info(
+                "[%s]: Comment recorded for user %s: %s",
+                (record_user_comment.__name__, user_id, comment[:15]),
+            )
+        except Exception as e:
+            log.error(
+                "[%s]:  for user %s Error =>  %s",
+                (record_user_comment.__name__, user_id, e.args[0]),
+            )
+            return
+    else:
+        # If the author == 'AI'
+        user_last_comment_list = IntermediateViolationsComment.objects.filter(
+            refer=refer, author="User"
+        )
+        user_last_comment = (
+            user_last_comment_list[-1] if len(user_last_comment_list) > 0 else None
+        )
+        comment_ai = Comments(refer=refer, comment=comment, author=author)
+        comment_ai.save()
+        if not user_last_comment:
+            user_last_comment = None
+
+        inntermediate_comments = IntermediateViolationsComment(
+            comments_user=user_last_comment, comments_ai=comment_ai, refer=refer
+        )
+        inntermediate_comments.save()
     # -----------------------------
     # ---------- COMMENT ----------
     return

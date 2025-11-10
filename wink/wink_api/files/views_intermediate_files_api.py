@@ -2,6 +2,8 @@ from adrf import viewsets
 import logging
 from rest_framework import status, permissions
 from rest_framework.response import Response
+
+
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.models_wink.violations import BasisViolation
 from wink.tasks.task_start_rotation import start_rotation
@@ -162,13 +164,14 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 # -------------- RECORDING USER COMMENT --
                 #  Here, we work with user comments - they, was sent to the AI parser process.
                 if comment & len(comment) > 0:
-                    from wink.wink_api import signal
+                    from wink.apps import signal
 
                     kwargs = {
                         "user_id": user.id,
                         "comment": comment,
                         # "target_audience":target_audience,
                         "file_id": file_id,
+                        "author": "User",
                     }
                     signal.send(sender=self.create.__name__, **kwargs)
                 # ----------------------------------------

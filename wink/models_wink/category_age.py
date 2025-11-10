@@ -10,7 +10,13 @@ from django.core.validators import (
 )
 from django.db.models import ForeignKey, CharField
 
-from project.settings import AGE_RATING_CHOICES, COMPLIANCE_LEVEL_RATING_CHOICES
+# from pygments.styles.dracula import comment
+
+from project.settings import (
+    AGE_RATING_CHOICES,
+    COMPLIANCE_LEVEL_RATING_CHOICES,
+    AUTHOR_OF_COMMET,
+)
 from django.utils.translation import gettext_lazy as _
 
 from wink.models_wink.violations import Quantity
@@ -41,6 +47,20 @@ class Comments(models.Model):
         verbose_name=_("Reference File"),
         db_column="refer_file_uuid_id",
         related_name="refers",
+    )
+    comment_author = models.CharField(
+        default=AUTHOR_OF_COMMET[1],
+        choices=AUTHOR_OF_COMMET,
+        max_length=30,
+        help_text=_("Comment author is AI  or User."),
+        verbose_name=_("Comment author"),
+        validators=[
+            MinValueValidator(2),
+            MaxValueValidator(30),
+            RegexValidator(
+                regex=r"(^[A-Z][A-Za-z-_]+$)",
+            ),
+        ],
     )
     #
     # author = models.ForeignKey(
@@ -87,6 +107,7 @@ class Comments(models.Model):
         verbose_name = _("Comments")
         verbose_name_plural = _("Comments")
         db_table = "wink_comments"
+        ordering = ["id"]
 
 
 class IntermediateViolationsComment(Quantity):
@@ -94,7 +115,9 @@ class IntermediateViolationsComment(Quantity):
     ТNаблица связанная с AI,
     Рекомендации от AI
     От AI в обратку приходит рефер.
-    По реферу определяет комент ползователя к данному файлу.реккомендации
+    По реферу определяет комент ползователя к реккмендации к файлу
+    По реферу определяет комент ползователя к комент от файла
+    Комент и рекомендационный комментарий из одной таблици - Comments
     """
 
     comments_user = models.ForeignKey(
@@ -103,7 +126,18 @@ class IntermediateViolationsComment(Quantity):
         verbose_name=_("Comments of user"),
         db_column="comments_user",
         related_name="comments_violations",
+        null=True,
+        blank=True,
     )
+    comments_ai = models.ForeignKey(
+        "Comments",
+        on_delete=models.CASCADE,
+        verbose_name=_("Comments of user"),
+        db_column="comments_user",
+        related_name="comments_violations",
+        help_text=_("Recommendation comment of AI"),
+    )
+
     # violations = models.ForeignKey(
     #     "BasisViolation",  # берём классы нарушений и комент к ним (статичный) Как рекоментация от AI
     #     verbose_name=_("Violations"),
@@ -112,16 +146,16 @@ class IntermediateViolationsComment(Quantity):
     #     help_text=_("Violations - the views of violations"),
     #     related_name="comments_violations",
     # )
-    comment_recommendation = (
-        models.TextField(
-            null=True,  # РеКомендации от AI
-            blank=True,
-            help_text=_("Recommendation comment of AI"),
-            verbose_name=_("Recommend"),
-            db_column="recommend",
-            validators=[],
-        ),
-    )
+    # comment_recommendation = (
+    #     models.TextField(
+    #         null=True,  # РеКомендации от AI
+    #         blank=True,
+    #         help_text=_("Recommendation comment of AI"),
+    #         verbose_name=_("Recommend"),
+    #         db_column="recommend",
+    #         validators=[],
+    #     ),
+    # )
 
     rating = models.CharField(
         default=COMPLIANCE_LEVEL_RATING_CHOICES[0],
@@ -133,6 +167,8 @@ class IntermediateViolationsComment(Quantity):
             MinValueValidator(1),
             MaxValueValidator(100),
         ],
+        null=True,
+        blank=True,
     )
     refer = models.CharField(
         # " ключ получаем из  поступивших результатов анализа от AI
@@ -166,3 +202,27 @@ class IntermediateViolationsComment(Quantity):
             db_column="updated_at",
         ),
     )
+
+    class Meta:
+        verbose_name = _("Comment is intermediate")
+        verbose_name_plural = _("Comments is intermediates")
+        # db_table = "wink_comments_intermediate"
+
+    def __str__(self):
+        return f"Рекомендация: {self.comments_ai}"
+
+    # def save(self, *args, **kwargs):
+    #     """
+    #
+    #     :param args:
+    #     :param kwargs:
+    #     :return:
+    #     """
+    #     # comment_user = Comments.objects
+    #     comment = self.comments_user.objects.filter(refer=self.refer)
+    #
+    #     if self.comments_user and len(comment) > 0:
+    #         comment
+    #         self.comments_user = comment.first()
+    #
+    #     super().save(*args, **kwargs)
