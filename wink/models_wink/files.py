@@ -48,7 +48,6 @@ class FilesModel(models.Model):
             MinValueValidator(0),
         ],
     )
-
     class Meta:
         verbose_name = _("File")
         verbose_name_plural = _("Files")
@@ -127,7 +126,19 @@ class IntermediateFilesModel(Quantity):
         db_column="violations",
         help_text=_("Violations - the views of violations"),
     )
-
+    target_audience = models.CharField(
+        max_length=3,
+        default="0+",
+        help_text=_("Age of target audience - '0+' or '6+'"),
+        verbose_name=_("Audience"),
+        validators=[
+            MinValueValidator(2),
+            MaxLengthValidator(3),
+            RegexValidator(
+                regex=r"(^\d+\+$)",
+            )
+        ]
+    )
     class Meta:
         verbose_name = _("Intermediate_files")
         verbose_name_plural = _("Intermediate_files")

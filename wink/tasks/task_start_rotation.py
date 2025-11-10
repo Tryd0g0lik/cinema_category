@@ -96,6 +96,7 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
         file_pk = inst.upload
         count_key = ACTIVE_COUNT_KEY.format(file_pk=file_pk)
         try:
+            global count
             # --------- REDIS incr ---------
             # https://redis-docs.ru/commands/incr/
             # Increments the number stored at key by one. If the key does not exist, it is set to 0 before performing the operation

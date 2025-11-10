@@ -21,6 +21,6 @@ router.register("violations", BasisViolationViewSet, basename="wink_violation")
 # router.register("download", FileReadOnlyModel.as_view(), basename="wink_readonly_file")
 urlpatterns = [
     path("", include(router.urls), name="api_urls_wink"),
-    path("download/<str:id>", FileReadOnlyModel.as_view(), name="wink_readonly_file"),
+    path("download/<str:refer>", FileReadOnlyModel.as_view(), name="wink_readonly_file"),
     path("csrftoken/", CSRFTokenView.as_view(), name="token_obtain_pair"),
 ]

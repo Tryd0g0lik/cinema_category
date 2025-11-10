@@ -1,6 +1,5 @@
 import asyncio
 import os.path
-from tkinter.scrolledtext import example
 
 from adrf import views
 import logging
@@ -177,4 +176,5 @@ class FileReadOnlyModel(views.APIView):
     )
     def post(self, request, *args, **kwargs):
         user_id = kwargs.get("user_id")
-        refer_key = kwargs.get("refer_key")
+        refer_key = kwargs.get("refer")
+

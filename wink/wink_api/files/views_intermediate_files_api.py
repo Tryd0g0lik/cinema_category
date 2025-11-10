@@ -36,6 +36,16 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     description="This is the id of the one file",
                     type=openapi.TYPE_INTEGER,
                 ),
+                'target_audience':openapi.Schema(
+                    openapi.IN_BODY,
+                    description="The 'target_audience' - target audience - Exemple: 0+ or 6+ ",
+                    type=openapi.TYPE_STRING,
+                ),
+                'comment':openapi.Schema(
+                    openapi.IN_BODY,
+                    description="Comment",
+                    type=openapi.TYPE_STRING,
+                )
             },
         ),
         manual_parameters=[
@@ -128,6 +138,8 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
         # ОТПРАВИТЬ СИГНАЛ НА AI ЧТОБ НАЧИНАЛА КАЧАТЬ
         user = request.user
         file_id = request.data.get("file_id")
+        target_audience = request.data.get("target_audience")
+        comment = request.data.get("comment")
         if file_id and file_id != "":
             try:
                 file = FilesModel.objects.filter(id=file_id)
@@ -140,7 +152,9 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_404_NOT_FOUND,
                     )
                 intermediate_file = IntermediateFilesModel.objects.create(
-                    user=user, upload=file.first()
+                    user=user, upload=file.first(),
+                    target_audience=target_audience,
+                    comment=comment
                 )
                 intermediate_file.violations.set(all_violations)
                 serializer = self.get_serializer(intermediate_file)
