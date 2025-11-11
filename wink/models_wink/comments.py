@@ -97,7 +97,7 @@ class IntermediateCommentModel(Quantity):
     От AI в обратку приходит рефер.
     По реферу определяет комент ползователя к реккмендации к файлу
     По реферу определяет комент ползователя к комент от файла
-    Комент и рекомендационный комментарий из одной таблици - Comments
+    Комент из  таблици - Comments
     """
 
     comments_user = models.ForeignKey(
@@ -108,14 +108,6 @@ class IntermediateCommentModel(Quantity):
         related_name="comments_user",
         null=True,
         blank=True,
-    )
-    comments_ai = models.ForeignKey(
-        "CommentsModel",
-        on_delete=models.CASCADE,
-        verbose_name=_("Comments of user"),
-        db_column="comments_ai",
-        related_name="comments_ai",
-        help_text=_("Recommendation comment of AI"),
     )
     rating = models.CharField(
         default=COMPLIANCE_LEVEL_RATING_CHOICES[0],

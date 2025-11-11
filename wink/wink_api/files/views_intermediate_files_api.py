@@ -176,7 +176,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 )
                 intermediate_file.violations.set(all_violations)
                 serializer = self.get_serializer(intermediate_file)
-                # -------------- RECORDING USER COMMENT --
+                # -------------- RECORDING THE USER's COMMENT --
                 #  Here, we work with user comments - they, was sent to the AI parser process.
                 if comment is not None and len(comment) > 0:
                     from wink.apps import signal
