@@ -24,6 +24,9 @@ class FilesModel(models.Model):
     """
     Сюда получаем файл
     Доступный всем пользователям
+    :param: str upload: is local path of the file. This is the file sent to the server (AI parsing)
+    :param: str name: is the file name.
+    :param: str size: is the file size.
     """
 
     upload = models.FileField(
@@ -67,6 +70,12 @@ class IntermediateFilesModel(Quantity):
     отправляем файл на анализ
     АШ скачивает файл
     по запросу запускаем задали celery и делаем рефер
+    :param int upload: is index of file which was sent to the server.
+    :param int user: is index of user (after authentication).
+    :param str target_audience: is target audience for the film script/scenario.
+    :param str refer: is the refer key for the film script. It's unique - here.
+    :param str created_at: is date when the file was created.
+    :param str updated_at: is date when the file was updated.
     """
 
     upload = models.ForeignKey(
@@ -100,18 +109,16 @@ class IntermediateFilesModel(Quantity):
             ),
         ],
     )
-    created_at = (
-        models.DateField(
-            blank=True,
-            null=True,
-            default=datetime.datetime.now,
-            verbose_name=_("Created at"),
-            help_text=_("Created at"),
-            db_column="created_at",
-            validators=[
-                # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
-            ],
-        ),
+    created_at = models.DateField(
+        blank=True,
+        null=True,
+        default=datetime.datetime.now,
+        verbose_name=_("Created at"),
+        help_text=_("Created at"),
+        db_column="created_at",
+        validators=[
+            # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+        ],
     )
 
     updated_at = (
@@ -131,14 +138,6 @@ class IntermediateFilesModel(Quantity):
         db_column="refer",
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
-    )
-
-    violations = models.ManyToManyField(
-        "BasisViolation",
-        blank=True,
-        verbose_name=_("Violations"),
-        db_column="violations",
-        help_text=_("Violations - the views of violations"),
     )
 
     class Meta:
