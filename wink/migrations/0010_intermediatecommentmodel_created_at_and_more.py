@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             field=models.DateField(
                 blank=True,
                 db_column="created_at",
-                default=datetime.datetime.now,
+                default=datetime.date.today().strftime("%Y-%m-%d"),
                 help_text="Created at",
                 null=True,
                 verbose_name="Created at",

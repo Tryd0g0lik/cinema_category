@@ -68,7 +68,7 @@ class CommentsModel(models.Model):
     created_at = models.DateField(
         blank=True,
         null=True,
-        default=datetime.datetime.now,
+        default=datetime.date.today().strftime("%Y-%m-%d"),
         verbose_name=_("Created at"),
         help_text=_("Created at"),
         db_column="created_at",
@@ -134,7 +134,7 @@ class IntermediateCommentModel(Quantity):
     created_at = models.DateField(
         blank=True,
         null=True,
-        default=datetime.datetime.now,
+        default=datetime.date.today().strftime("%Y-%m-%d"),
         verbose_name=_("Created at"),
         help_text=_("Created at"),
         db_column="created_at",

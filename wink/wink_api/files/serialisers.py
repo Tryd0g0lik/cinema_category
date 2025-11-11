@@ -12,6 +12,11 @@ class IntermediateFilesSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("created_at",)
 
+    # def get_date_field(self, obj):
+    #     if obj.datetime_field:
+    #         return obj.datetime_field.date()
+    #     return None
+
 
 class FilesSerializer(serializers.ModelSerializer):
     class Meta:

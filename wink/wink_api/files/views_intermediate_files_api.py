@@ -149,18 +149,18 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             try:
 
                 file = FilesModel.objects.filter(id=file_id)
-                all_violations = BasisViolation.objects.all()
-                intermediate_duplicate_file = IntermediateFilesModel.objects.filter(
-                    upload=file_id
-                )
-                if intermediate_duplicate_file.first():
-                    # ---- СОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ
-                    return Response(
-                        {
-                            "errors": "File is exists. Wait one day and upload again or rename file!"
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                # all_violations = BasisViolation.objects.all()
+                # intermediate_duplicate_file = IntermediateFilesModel.objects.filter(
+                #     upload=file_id
+                # )
+                # if intermediate_duplicate_file.first():
+                #     # ---- СОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ
+                #     return Response(
+                #         {
+                #             "errors": "File is exists. Wait one day and upload again or rename file!"
+                #         },
+                #         status=status.HTTP_400_BAD_REQUEST,
+                #     )
                 if len(file) == 0:
                     return Response(
                         {
@@ -174,7 +174,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     upload=file.first(),
                     target_audience=target_audience,
                 )
-                intermediate_file.violations.set(all_violations)
+                # intermediate_file.violations.set(all_violations)
                 serializer = self.get_serializer(intermediate_file)
                 # -------------- RECORDING THE USER's COMMENT --
                 #  Here, we work with user comments - they, was sent to the AI parser process.

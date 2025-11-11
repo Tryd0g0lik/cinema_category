@@ -1,20 +1,21 @@
+import base64
+import json
 import os.path
+from io import BytesIO
 
 from adrf import views
 import logging
 
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import FileResponse
 from django.apps import apps
-from django.shortcuts import get_object_or_404
-from pycparser.ply.cpp import t_error
 from rest_framework import status, permissions
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
 from wink.tasks.task_start_rotation import stop_rotation
-from wink.wink_api.files.views_files_api import FilesViewSet
+from wink.wink_api.files.serialisers import FilesSerializer
 
 IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 FilesModel = apps.get_model("wink", "FilesModel")
@@ -146,72 +147,42 @@ class FileReadOnlyView(views.APIView):
 
 class FileRecordOnlyView(views.APIView):
 
-    @swagger_auto_schema(
-        operation_description="""
-        `Событие от AI` - AI отправляет результат анализа файла в db.
-        HTTP Method is POST http://127.0.0.1:8000/api/v1/wink/raport/
-        `Note:` В разработке
-        """,
-        method="POST",
-        tags=["ai"],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["refer", "user_id"],
-            properties={
-                "user_id": openapi.Schema(
-                    openapi.IN_BODY,
-                    description="User ID which was got to the method 'GET' from API's request's `HEADERS['X-User-ID']`",
-                    type=openapi.TYPE_INTEGER,
-                ),
-                "refer": openapi.Schema(
-                    openapi.IN_BODY,
-                    description="Refer key which was got to the method 'GET .../api/v1/wink/download/<str:refer>/' from API's URL pathname. ",
-                    type=openapi.TYPE_INTEGER,
-                ),
-            },
-        ),
-        manual_parameters=[
-            openapi.Parameter(
-                "X-CSRFToken",
-                openapi.IN_HEADER,
-                description="The X-CSRFToken header. Token 'csrftoken you cant take from the cookie or to look the API's tage 'csrf'",
-                required=True,
-                type=openapi.TYPE_STRING,
-            )
-        ],
-        responses={200: "в разработке"},
-    )
-    @api_view(
-        [
-            "POST",
-        ]
-    )
-    async def post(self, request, *args, **kwargs):
-
-        f = FilesViewSet()
-
+    def post(self, request, *args, **kwargs):
+        """
+        `Событие от AI` - получаем файл - результат парсинга.
+        Сохраняем файл предоставленный AI
+        :DO Проверить  как поступят данные:
+         1) используется VIEW который получает файл сценария от пользователя. От пользователя поступает файл в виде данных из фармы.
+         2) От AI поступает (ответ - результат анализа/парсинга) файл JSON но сохраняется через Serializer.
+        """
+        serializer = FilesSerializer(data=request.data)
         try:
             # ------------ RECORD OF FILE (FROM AI) ------------
-            response = await f.create(request.data, *args, **kwargs)
-            user = request.user
-            file_id = response.data["file_id"]
-            refer = response.headers["X-Refer-Key"]
+            if not serializer.is_valid():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            # ------------ GET DATA  FOR UPDATE IntermediateFilesModel
+            file_id = serializer.data["id"]
+            refer = request.headers["X-Refer-Key"]
             if not file_id or not refer:
                 text_error = "Maybe, refer key not found or file (from the ai) invalid."
                 log.info(f"[FileRecordOnlyModel]: ERROR => {text_error}"),
                 return Response(
                     {"errors": text_error}, status=status.HTTP_404_NOT_FOUND
                 )
-            # ------------ UPDATE TABLE - ADDITIONAL ID --------
+            # ------------ UPDATE TABLE's LINE - ADDITIONAL ID -
             f_ai_list = IntermediateFilesModel.objects.filter(refer=refer)
-            if not f_ai_list.first():
+            # check data
+            if not f_ai_list.exists():
                 text_error = "File (from the ai) didn't was found."
                 log.info(f"[FileRecordOnlyModel]: ERROR => {text_error}"),
                 return Response(
                     {"errors": text_error}, status=status.HTTP_404_NOT_FOUND
                 )
+            f_obj = FilesModel.objects.filter(id=file_id)
             f_ai = f_ai_list.first()
-            f_ai.update(upload_ai=file_id)
+            f_ai.upload_ai = f_obj.first()
+            f_ai.save()
 
         except Exception as e:
             text_error = e.args[0]
@@ -221,3 +192,26 @@ class FileRecordOnlyView(views.APIView):
             )
         # ------------ ALL SUCCESSFUL ----------------------
         return Response(status=status.HTTP_200_OK)
+
+
+def json_to_file(request):
+    # Парсим JSON из request.body
+    data = json.loads(request.body)
+
+    # Предполагаем, что файл в base64
+    file_data = base64.b64decode(data["file_data"])
+    file_name = data["file_name"]
+    content_type = data.get("content_type", "application/octet-stream")
+
+    # Создаем InMemoryUploadedFile
+    file_stream = BytesIO(file_data)
+    file = InMemoryUploadedFile(
+        file=file_stream,
+        field_name="file",
+        name=file_name,
+        content_type=content_type,
+        size=len(file_data),
+        charset=None,
+    )
+
+    return file
