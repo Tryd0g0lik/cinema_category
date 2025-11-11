@@ -131,28 +131,22 @@ class IntermediateCommentModel(Quantity):
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
     )
-    created_at = (
-        (
-            models.DateField(
-                blank=True,
-                null=True,
-                default=datetime.datetime.now,
-                verbose_name=_("Created at"),
-                help_text=_("Created at"),
-                db_column="created_at",
-                validators=[
-                    # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
-                ],
-            ),
-        ),
+    created_at = models.DateField(
+        blank=True,
+        null=True,
+        default=datetime.datetime.now,
+        verbose_name=_("Created at"),
+        help_text=_("Created at"),
+        db_column="created_at",
+        validators=[
+            # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
+        ],
     )
-    updated_at = (
-        models.DateField(
-            auto_now=True,
-            verbose_name=_("Updated at"),
-            help_text=_("Past time when the file was updated"),
-            db_column="updated_at",
-        ),
+    updated_at = models.DateField(
+        auto_now=True,
+        verbose_name=_("Updated at"),
+        help_text=_("Past time when the file was updated"),
+        db_column="updated_at",
     )
 
     class Meta:

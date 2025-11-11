@@ -76,7 +76,7 @@ class FilesViewSet(viewsets.ModelViewSet):
     )
     async def create(self, request, *args, **kwargs):
         """
-        NODE: The method don't use the check on the duplicate!!!
+        DO: The method don't use the check on the duplicate!!!
         """
         error_text = "[%s.%s]:" % (
             __class__.__name__,

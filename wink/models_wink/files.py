@@ -31,7 +31,7 @@ class FilesModel(models.Model):
 
     upload = models.FileField(
         upload_to="upload/%Y/%m/%d/",
-        help_text=_("Upload the file - pdf, docx"),
+        help_text=_("Upload the file - pdf, docx, json"),
         verbose_name=_("File"),
         null=True,
         blank=True,
@@ -86,6 +86,16 @@ class IntermediateFilesModel(Quantity):
         help_text=_("Select existing the file id"),
         related_name="loaded_files",
     )
+    upload_ai = models.OneToOneField(
+        FilesModel,
+        on_delete=models.CASCADE,
+        verbose_name=_("File"),
+        db_column="file_ai",
+        help_text=_("Select existing the file id - This is the result of the analysis"),
+        related_name="analysis_files",
+        null=True,
+        blank=True,
+    )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -121,13 +131,11 @@ class IntermediateFilesModel(Quantity):
         ],
     )
 
-    updated_at = (
-        models.DateField(
-            auto_now=True,
-            verbose_name=_("Updated at"),
-            help_text=_("Past time when the file was updated"),
-            db_column="updated_at",
-        ),
+    updated_at = models.DateField(
+        auto_now=True,
+        verbose_name=_("Updated at"),
+        help_text=_("Past time when the file was updated"),
+        db_column="updated_at",
     )
 
     refer = models.UUIDField(
