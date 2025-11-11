@@ -65,16 +65,14 @@ class CommentsModel(models.Model):
         ],
     )
 
-    created_at = (
-        models.DateField(
-            blank=True,
-            null=True,
-            default=datetime.datetime.now,
-            verbose_name=_("Created at"),
-            help_text=_("Created at"),
-            db_column="created_at",
-            validators=[],
-        ),
+    created_at = models.DateField(
+        blank=True,
+        null=True,
+        default=datetime.datetime.now,
+        verbose_name=_("Created at"),
+        help_text=_("Created at"),
+        db_column="created_at",
+        validators=[],
     )
 
     updated_at = models.DateField(
