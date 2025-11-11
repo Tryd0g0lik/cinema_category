@@ -56,8 +56,6 @@ def record_user_comment(sender, **kwargs):
             "[%s]:  for user %s Error =>  %s",
             (record_user_comment.__name__, user_id, e.args[0]),
         )
-    # -----------------------------
-
     return
 
 

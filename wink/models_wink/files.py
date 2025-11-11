@@ -104,6 +104,13 @@ class IntermediateFilesModel(Quantity):
         help_text=_("Select the user id"),
         related_name="loaded_files",
     )
+    violations = models.ManyToManyField(
+        "BasisViolation",
+        blank=True,
+        verbose_name=_("Violations"),
+        db_column="violations",
+        help_text=_("Violations - the views of violations"),
+    )
     target_audience = models.CharField(
         default=AGE_RATING_CHOICES[1],
         choices=AGE_RATING_CHOICES,
