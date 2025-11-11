@@ -34,14 +34,16 @@ class CommentsModel(models.Model):
         blank=True,
         verbose_name=_("Comments"),
     )
+    upload = models.FileField(
+        null=True,
+        blank=True,
+        verbose_name=_("Upload file"),
+        help_text=_("Upload file how result of parsing."),
+        db_column="upload",
+    )
     refer = models.OneToOneField(
-        # """"
-        # Комментарий от пользователя указываем ДО отправления на анализ или
-        # после?
-        # """
         "IntermediateFilesModel",
-        unique=True,  # реферальный клююч. Вероятно его забираем из поступившего анализа
-        # ключ создаём при отправке файла на анализ.
+        unique=True,
         to_field="refer",
         on_delete=models.CASCADE,
         verbose_name=_("Reference File"),
@@ -64,25 +66,22 @@ class CommentsModel(models.Model):
     )
 
     created_at = (
-        (
-            models.DateField(
-                blank=True,
-                null=True,
-                default=datetime.datetime.now,
-                verbose_name=_("Created at"),
-                help_text=_("Created at"),
-                db_column="created_at",
-                validators=[],
-            ),
+        models.DateField(
+            blank=True,
+            null=True,
+            default=datetime.datetime.now,
+            verbose_name=_("Created at"),
+            help_text=_("Created at"),
+            db_column="created_at",
+            validators=[],
         ),
     )
-    updated_at = (
-        models.DateField(
-            auto_now=True,
-            verbose_name=_("Updated at"),
-            help_text=_("Past time when the file was updated"),
-            db_column="updated_at",
-        ),
+
+    updated_at = models.DateField(
+        auto_now=True,
+        verbose_name=_("Updated at"),
+        help_text=_("Past time when the file was updated"),
+        db_column="updated_at",
     )
 
     class Meta:
