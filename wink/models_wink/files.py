@@ -16,7 +16,7 @@ from django.core.validators import (
 )
 from django.contrib.auth.models import User
 
-from project.settings import AGE_RATING_CHOICES
+from project.settings import AGE_RATING_CHOICES, STATUS_FILE
 from wink.models_wink.comments import Quantity
 
 
@@ -153,6 +153,14 @@ class IntermediateFilesModel(Quantity):
         db_column="refer",
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
+    )
+    status_file = models.CharField(
+        default=STATUS_FILE[0],
+        choices=STATUS_FILE,
+        max_length=20,
+        help_text=_("Status of the file to be parsing"),
+        verbose_name=_("Status"),
+        db_column="status_file",
     )
 
     class Meta:

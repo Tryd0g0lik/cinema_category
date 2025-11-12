@@ -2,15 +2,31 @@
 flow/views.py
 """
 
+import json
 import os
-
+from django.http import StreamingHttpResponse
+from django.apps import apps
 from django.shortcuts import render
+from rest_framework.request import Request
 
 from project import settings
 from project.settings import BASE_DIR
 
+IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 
 # Create your views here.
+
+
+def file_event_stream(request: Request, **kwargs) -> StreamingHttpResponse:
+    refer = kwargs["refer"].strip()
+
+    def event_stream():
+        file_obj = IntermediateFilesModel.object.filter(refer=refer)
+        if not file_obj.exists():
+            pass
+
+
+# 3. Server-Sent Events (SSE)
 
 
 def main(request):

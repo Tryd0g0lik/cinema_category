@@ -80,6 +80,16 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                             description="That is the index of file (refer key). It will be send to the parser.",
                             example=7,
                         ),
+                        "upload_ai": openapi.Schema(
+                            type=openapi.TYPE_INTEGER,
+                            description="That is the index of file (refer key). It will be send from the parser.  The default value is null/None",
+                            example=7,
+                        ),
+                        "status_file": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Status has four of values. 1) '--------' is by default, 2) 'processing' is when the file is sent for processing, 3) 'ready' is all successful and completed. 4) 'error'.",
+                            example=7,
+                        ),
                         "user": openapi.Schema(
                             type=openapi.TYPE_INTEGER,
                             description="That is the index of user. This user who sent the one file to the parser.",
@@ -145,6 +155,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
         file_id = request.data.get("file_id")
         target_audience = request.data.get("target_audience")
         comment = request.data.get("comment")
+        index = None
         if file_id and file_id != "":
             try:
 
@@ -173,7 +184,9 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     user=user,
                     upload=file.first(),
                     target_audience=target_audience,
+                    status_file="processing",
                 )
+                index = intermediate_file.id
                 # intermediate_file.violations.set(all_violations)
                 serializer = self.get_serializer(intermediate_file)
                 # -------------- RECORDING THE USER's COMMENT --
@@ -189,8 +202,6 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     }
                     signal.send(sender=self.create.__name__, **kwargs)
                     log.info("Signal START & Sender: %s", (self.create.__name__,))
-                # ----------------------------------------
-                # refer = serializer.data["refer"].strip()
                 # -------------- AI REQUEST --------------
                 # тут отправляем GET запрос на AI + refer в URL-е
                 # ----------------------------------------
@@ -202,6 +213,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 except Exception as e:
                     import traceback
 
+                    intermediate_file.status_file = "error"
                     tb = traceback.format_exc()
                     log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
                 # ----------------------------------------
@@ -213,10 +225,15 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     "user": ser.get("user"),
                     "violations": ser.get("violations"),
                     "violations_quantity": ser.get("violations_quantity"),
+                    "upload_ai": ser.get("upload_ai"),
+                    "status_file": ser.get("status_file"),
                 }
 
                 return Response(data, status=status.HTTP_201_CREATED)
             except (FilesModel.DoesNotExist, BasisViolation.DoesNotExist) as error:
+                intr = IntermediateFilesModel.objects.filter(id=index)
+                if intr.exists():
+                    intr[0].status_file = "error"
                 return Response(
                     {
                         "errors": f"{error_text} => File with id '{file_id}' not found or {str(error)}"
@@ -224,6 +241,10 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
             except Exception as e:
+                if index:
+                    intr = IntermediateFilesModel.objects.filter(id=index)
+                    if intr.exists():
+                        intr[0].status_file = "error"
                 return Response(
                     {"errors": f"{error_text} => {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,

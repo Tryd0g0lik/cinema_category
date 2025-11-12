@@ -88,6 +88,7 @@ class FileReadOnlyView(views.APIView):
         error_text = "[%s.%s]:" % (__class__.__name__, self.get.__name__)
         # files's refer key
         refer = kwargs.get("refer")
+        index = None
         try:
             # -------------- SEARCH THE FILE BY A REFER
             intermediate_all = IntermediateFilesModel.objects.filter(refer=refer)
@@ -103,11 +104,13 @@ class FileReadOnlyView(views.APIView):
             file_id = intermediate_obj.upload.id
             file_target_audience = intermediate_obj.target_audience
             file_obj = FilesModel.objects.filter(id=file_id).first()
+            index = intermediate_obj.id
             if (
                 not file_obj
                 or not file_obj.upload
                 or not os.path.exists(file_obj.upload.path)
             ):
+                intermediate_obj.status_file = "error"
                 t_error = f"{error_text} ERROR => The file invalid."
                 log.info(t_error)
                 return Response(
@@ -129,12 +132,17 @@ class FileReadOnlyView(views.APIView):
             try:
                 stop_rotation.delay(user_id)
             except Exception as e:
+                intermediate_obj.status_file = "error"
                 import traceback
 
                 tb = traceback.format_exc()
                 log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
-
+            file_obj.status_file = "ready"
         except Exception as e:
+            if index:
+                intr = IntermediateFilesModel.objects.filter(id=index)
+                if intr.exists():
+                    intr[0].status_file = "error"
             t_error = f"ERROR => {e.args[0]}"
             log.error(t_error)
             return Response(
@@ -156,6 +164,7 @@ class FileRecordOnlyView(views.APIView):
          2) От AI поступает (ответ - результат анализа/парсинга) файл JSON но сохраняется через Serializer.
         """
         serializer = FilesSerializer(data=request.data)
+        index = None
         try:
             # ------------ RECORD OF FILE (FROM AI) ------------
             if not serializer.is_valid():
@@ -179,12 +188,19 @@ class FileRecordOnlyView(views.APIView):
                 return Response(
                     {"errors": text_error}, status=status.HTTP_404_NOT_FOUND
                 )
+            # save data
             f_obj = FilesModel.objects.filter(id=file_id)
             f_ai = f_ai_list.first()
+            index = f_ai.id
             f_ai.upload_ai = f_obj.first()
+            f_ai.status_file = "ready"
             f_ai.save()
 
         except Exception as e:
+            if index:
+                intr = IntermediateFilesModel.objects.filter(id=index)
+                if intr.exists():
+                    intr[0].status_file = "error"
             text_error = e.args[0]
             log.error(f"[FileRecordOnlyModel]: ERROR => {text_error}"),
             return Response(

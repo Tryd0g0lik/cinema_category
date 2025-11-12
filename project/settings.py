@@ -56,18 +56,26 @@ AGE_RATING_CHOICES = [
     ("16+", _("От 16 лет")),
     ("18+", _("Совершеннолетним")),
 ]
-
+# who is author of comment
 AUTHOR_OF_COMMET = [
     ("AI", _("Рекомендация после анализа")),
     ("User", _("Комментарий к файлу"))
 ]
-
+# rating  scenario after parsing.
 COMPLIANCE_LEVEL_RATING_CHOICES = [
     ("----", _("Не учьтено")),
     ("None", _("Соответствует")),
     ("mild", _("Незначительное нарушение")),
     ("moderate", _("Существенное нарушение")),
     ("severe", _("Грубое нарушение")),
+]
+
+# status of the file to be parsing
+STATUS_FILE = [
+    ("--------", _("Не учьтено")),
+    ("processing", _("В процессе")),
+    ("ready", _("Завершено")),
+    ("error", _("Ошибка")),
 ]
 
 # '''Cookie'''
@@ -159,7 +167,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "person",
+    'drf_sse',
     "wink",
 ]
 
@@ -304,6 +312,7 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
+CORS_ALLOW_ALL_ORIGINS=True
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -429,7 +438,6 @@ WAGTAILSEARCH_BACKENDS = {
 }
 WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
 
-
-# '''CELERY'''
-# CELERY_TASK_TRACK_STARTED = True
-# CELERY_TASK_TIME_LIMIT = 60 * 60 * 12
+#
+# # '''SSE'''
+# SSE_ENCODE_BASE64 = True
