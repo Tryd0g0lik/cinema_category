@@ -4,6 +4,7 @@ import logging
 import threading
 import os
 from adrf import viewsets
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.conf import settings
@@ -74,31 +75,20 @@ class FilesViewSet(viewsets.ModelViewSet):
             400: "{'errors': 'text of error'}",
         },
     )
-    async def create(self, request, *args, **kwargs):
+    async def create(self, request: Request, *args, **kwargs) -> Response:
         """
         DO: The method don't use the check on the duplicate!!!
+        Description: This is the method for records the user's file to the server.
+
         """
         error_text = "[%s.%s]:" % (
             __class__.__name__,
             self.create.__name__,
         )
-        # age_target_audience = request.HEADERS.get("X-Age")
         user = request.user
         file = request.FILES["upload"]
-        serializer = self.get_serializer(data=request.data)
-        is_valid = serializer.is_valid()
-        if not is_valid:
-            log.error(
-                "%s Error => %s",
-                (
-                    error_text,
-                    "Request data is not valid.",
-                ),
-            )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
         try:
-            # RECORD META DATA
+            # ----------- RECORD THE META DATA ------
             f_object = FilesModel(name=file.name, size=file.size, upload=None)
             await f_object.asave()
 
@@ -115,7 +105,7 @@ class FilesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            # Get path for file
+            # ----------- GET THE PATH OF FILE ------
             date = datetime.date.today().strftime("%Y-%m-%d").split("-")
             file_path = f"upload\\{date[0]}\\{date[1]}\\{date[2]}\\{f_object.name}"
             upload_dir = os.path.join(settings.MEDIA_ROOT, file_path)
@@ -134,7 +124,7 @@ class FilesViewSet(viewsets.ModelViewSet):
                         handle_uploaded_file(upload_dir, file, f_object.id, FilesModel)
                     )
 
-                # OPEN NEW THREAD
+                # ----------- OPEN NEW THREAD -----------
                 thread = threading.Thread(target=_run_async)
                 thread.start()
                 thread.join()
