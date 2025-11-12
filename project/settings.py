@@ -151,7 +151,8 @@ INSTALLED_APPS = [
     'wagtail.search',
     'wagtail.admin',
     'wagtail.contrib.settings',
-    "wagtail_localize"
+    "wagtail_localize",
+    "wagtail_localize.locales",
     'wagtail',
     'taggit',
     'modelcluster',
