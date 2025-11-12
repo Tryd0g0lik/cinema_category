@@ -33,7 +33,9 @@ schema_view = get_schema_view(
         - POST {{url}}/download/:refer/ - Сохранить результат анализа файл. (ещё в работе);
         - GET {{url}}/download/:refer/ - скачать файл;
         - GET {{url}}/csrftoken/ - получить CSRF-token;
+        - GET {{url}}/download/abc123/ - Стриминг событий в реальном времени о статусе обработки файла;
         - POST {{url}}/comments/ - Сохранить комментарии от пользователя и AI. Каждая сохраняется отдельной строкой;
+        - POST {{url}}/recommend/ - В единой строке объеденяем пользователя и AI. 'refer' у всех общий;
         - POST {{url}}/recommend/ - В единой строке объеденяем пользователя и AI. 'refer' у всех общий;
 
         """,
