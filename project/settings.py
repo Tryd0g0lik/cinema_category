@@ -151,6 +151,7 @@ INSTALLED_APPS = [
     'wagtail.search',
     'wagtail.admin',
     'wagtail.contrib.settings',
+    "wagtail_localize"
     'wagtail',
     'taggit',
     'modelcluster',
@@ -167,7 +168,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # 'drf_sse',
     "wink",
 ]
 
@@ -301,8 +301,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-# Allow the cookie in HTTP request.
-CORS_ALLOW_CREDENTIALS = True
 # Allow the methods to the methods in HTTP
 CORS_ALLOW_METHODS = [
     "DELETE",

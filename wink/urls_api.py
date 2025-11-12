@@ -5,6 +5,7 @@ wink/urls_api.py
 from django.urls import path, include
 from rest_framework import routers
 
+from wink import views
 from wink.wink_api.comments.views_comments import (
     CommentViewSet,
     IntermediateCommentViewSet,
@@ -28,5 +29,6 @@ urlpatterns = [
     path("", include(router.urls), name="api_urls_wink"),
     path("download/<str:refer>/", FileReadOnlyView.as_view(), name="wink_read_file"),
     path("record/", FileRecordOnlyView.as_view(), name="wink_record_file"),
+    path("sse/<str:index>/", views.file_event_stream, name="sse_stream"),
     path("csrftoken/", CSRFTokenView.as_view(), name="token_obtain_pair"),
 ]

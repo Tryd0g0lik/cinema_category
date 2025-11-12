@@ -4,11 +4,13 @@ flow/views.py
 
 import json
 import os
+from datetime import time
+
 from django.http import StreamingHttpResponse
 from django.apps import apps
 from django.shortcuts import render
 from rest_framework.request import Request
-
+from rest_framework.decorators import api_view
 from project import settings
 from project.settings import BASE_DIR
 
@@ -17,13 +19,35 @@ IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 # Create your views here.
 
 
-def file_event_stream(request: Request, **kwargs) -> StreamingHttpResponse:
-    refer = kwargs["refer"].strip()
+@api_view(["GET"])
+def file_event_stream(request: Request, file_id: int) -> StreamingHttpResponse:
 
     def event_stream():
-        file_obj = IntermediateFilesModel.object.filter(refer=refer)
-        if not file_obj.exists():
-            pass
+        file_obj_lisd = IntermediateFilesModel.object.filter(upload=file_id)
+        if not file_obj_lisd.exists():
+            yield f"data: {json.dumps({'status': 'error'})}\n\n"
+        # ---------- CYCLE AT THE PROCESS ----------
+        while file_obj_lisd[0].status_file == "processing":
+            yield f"data: {json.dumps({'status': 'processing'})}\n\n"
+            file_obj_lisd[0].refresh_from_db()
+
+        # ---------- READY SUCCESSFUL --------------
+        if file_obj_lisd[0].status_file.startswith("ready"):
+            yield f"data: {json.dumps({
+                'status': file_obj_lisd[0].status_file,
+                'download_url': f"/api/v1/wink/download/{file_obj_lisd[0].upload_ai.refer}",
+            })}\n\n"
+        # ---------- FILE RECEIVED THE ERROR ------
+        if file_obj_lisd[0].status_file.startswith("error"):
+            yield f"data: {json.dumps({
+                'status': file_obj_lisd[0].status_file,
+            })}\n\n"
+
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
+        response["Cache-Control"] = "no-cache"
+        return response
 
 
 # 3. Server-Sent Events (SSE)
