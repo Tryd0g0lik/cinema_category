@@ -9,6 +9,8 @@ from datetime import time
 from django.http import StreamingHttpResponse
 
 from django.shortcuts import render
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 from project.settings import BASE_DIR

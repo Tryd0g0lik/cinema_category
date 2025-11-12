@@ -8,6 +8,7 @@ services:
             - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             - POSTGRES_DB=${POSTGRES_DB}
             - POSTGRES_HOST_AUTH_METHOD=trust
+#            - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_MULTIPLE_DATABASES}
         restart: unless-stopped
         healthcheck:
             test: [ 'CMD-SHELL', 'pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}' ]
@@ -18,20 +19,9 @@ services:
             - "5432:5432"
         networks:
             - database
-#    command: |
-#  bash -c "
-#    docker-entrypoint.sh postgres &
-#    until pg_isready -U $$POSTGRES_USER; do sleep 1; done;
-#    for db in \$$(echo $$POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
-#      psql -U $$POSTGRES_USER -c \"CREATE DATABASE \\\"\$$db\\\";\"
-#      psql -U $$POSTGRES_USER -c \"GRANT ALL PRIVILEGES ON DATABASE \\\"\$$db\\\" TO \\\"$$POSTGRES_USER\\\";\"
-#    done
-#    wait
-#  "
-        # psql -c "GRANT ALL PRIVILEGES ON DATABASE ${secrets.POSTGRES_MULTIPLE_DATABASES} TO $$POSTGRES_USER$$;"
         volumes:
             - postgres_data:/var/lib/postgresql/18/data
-            - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
+#            - ./init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh
 
     backend:
         container_name: app
@@ -39,19 +29,15 @@ services:
             dockerfile: ./Dockerfile
             context: .
         env_file: ./.env
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_MULTIPLE_DATABASES}
         command:
             - bash
             - -c
             - |
-                python3 ./manage.py shell -c "
-                print( 'Ждем пока БД будет готова')
-                until pg_isready -h db -p 5432 -U $$POSTGRES_USER; do
-                  print('Waiting for database...')
-                  sleep 2
-                done
-
-                prin('Database is ready! Starting migrations...')
-                "                
                 python3 ./manage.py makemigrations
                 python3 ./manage.py migrate
                 python3 ./manage.py collectstatic --clear --noinput
@@ -115,7 +101,7 @@ services:
             - backend
             - database
     redis:
-        container_name: wink_redis
+        container_name: redis_app
         image: redis:7.2-alpine
         command: redis-server --appendonly yes --bind 0.0.0.0
         healthcheck:

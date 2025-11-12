@@ -24,13 +24,22 @@ jobs:
           DEPLOY_HOST: ${{ secrets.SSH_HOST }}
           DEPLOY_USER: ${{ secrets.SSH_USER }}
           DEPLOY_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
         needs: deploy_wink
         steps:
-          - name: Deploy to GitHub Pages
-            uses: appleboy/ssh-action@master
-            with:
-              host: ${{ secrets.SSH_HOST }}
-              username: ${{ secrets.SSH_USER }}
-              password: ${{ secrets.SSH_PASSWORD }}
-              script: |
-                  expect /home/denis/wink/pull.exp
+            -  name: Login to Docker Hub
+               uses: docker/login-action@v3
+               with:
+                   username: ${{ secrets.DOCKER_USERNAME }}
+                   password: ${{ secrets.DOCKER_PASSWORD }}
+
+            -   name: Deploy to GitHub Pages
+                uses: appleboy/ssh-action@master
+                with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  password: ${{ secrets.SSH_PASSWORD }}
+                  script: |
+                      expect /home/denis/wink/pull.exp
