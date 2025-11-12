@@ -15,3 +15,6 @@ nginx
 *-dependencies.txt
 *.sqlite3
 img
+wink/migrations/*.py
+!wink/migrations/__init__.py
+
