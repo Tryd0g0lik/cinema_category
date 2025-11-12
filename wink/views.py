@@ -7,14 +7,13 @@ import os
 from datetime import time
 
 from django.http import StreamingHttpResponse
-from django.apps import apps
+
 from django.shortcuts import render
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from project import settings
 from project.settings import BASE_DIR
+from wink.models_wink.files import IntermediateFilesModel
 
-IntermediateFilesModel = apps.get_model("wink", "IntermediateFilesModel")
 
 # Create your views here.
 
