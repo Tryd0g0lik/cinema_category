@@ -51,8 +51,7 @@ services:
                 done
 
                 prin('Database is ready! Starting migrations...')
-                "
-                
+                "                
                 python3 ./manage.py makemigrations
                 python3 ./manage.py migrate
                 python3 ./manage.py collectstatic --clear --noinput
