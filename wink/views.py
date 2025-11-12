@@ -22,7 +22,7 @@ from wink.models_wink.files import IntermediateFilesModel
 def file_event_stream(request: Request, file_id: int) -> StreamingHttpResponse:
 
     def event_stream():
-        file_obj_lisd = IntermediateFilesModel.object.filter(upload=file_id)
+        file_obj_lisd = IntermediateFilesModel.objects.filter(upload=file_id)
         if not file_obj_lisd.exists():
             yield f"data: {json.dumps({'status': 'error'})}\n\n"
         # ---------- CYCLE AT THE PROCESS ----------
