@@ -99,10 +99,10 @@ services:
             context: .
             dockerfile: ./Dockerfile  # Тот же Dockerfile, что и для backend
         env_file: ./.env
-        command:
+        command: #  -concurrency=2
             - sh
             - -c
-            - "celery -A project.celery worker --loglevel=info -concurrency=2"
+            - "celery -A project.celery worker --loglevel=info"
 
         volumes:
             - .:/www/src

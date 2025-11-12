@@ -33,7 +33,4 @@ jobs:
               username: ${{ secrets.SSH_USER }}
               password: ${{ secrets.SSH_PASSWORD }}
               script: |
-                  sudo apt-get clean
-                  sudo docker system prune -a -f --volumes || true
-                  sudo journalctl --vacuum-time=1d
                   expect /home/denis/wink/pull.exp
