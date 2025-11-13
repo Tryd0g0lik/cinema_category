@@ -2,11 +2,8 @@ import datetime
 
 from django.db import models
 from django.core.validators import (
-    FileExtensionValidator,
     MinValueValidator,
-    MaxLengthValidator,
     RegexValidator,
-    MaxValueValidator,
     MinLengthValidator,
 )
 from django.db.models import ForeignKey, CharField
@@ -14,7 +11,6 @@ from django.db.models import ForeignKey, CharField
 # from pygments.styles.dracula import comment
 
 from project.settings import (
-    AGE_RATING_CHOICES,
     COMPLIANCE_LEVEL_RATING_CHOICES,
     AUTHOR_OF_COMMET,
 )
@@ -35,23 +31,23 @@ class CommentsModel(models.Model):
         blank=True,
         verbose_name=_("Comments"),
     )
-    refer = models.OneToOneField(
+    refer_file = models.OneToOneField(
         "IntermediateFilesModel",
         on_delete=models.CASCADE,
-        # editable=False,  # По этому ключу можем искать комент пользователя в "Comments"
-        db_column="refer",
-        max_length=50,
+        to_field="refer",
+        db_column="refer_file",
+        related_name="refer_files",
+        verbose_name=_("Reference File"),
         help_text=_("Reference link to the file - pdf, docx"),
     )
+
     comment_author = models.CharField(
-        default=AUTHOR_OF_COMMET[1],
+        default="User",
         choices=AUTHOR_OF_COMMET,
-        max_length=30,
         help_text=_("Comment author is AI  or User."),
         verbose_name=_("Comment author"),
         validators=[
             MinLengthValidator(2),
-            MaxLengthValidator(30),
             RegexValidator(
                 regex=r"(^[A-Z][A-Za-z-_]+$)",
             ),
@@ -99,7 +95,6 @@ class IntermediateCommentModel(Quantity):
     comments_user = models.ForeignKey(
         "CommentsModel",
         on_delete=models.CASCADE,
-        to_field="refer",
         verbose_name=_("Comments of user"),
         db_column="comments_user",
         related_name="comments_user",
@@ -107,21 +102,23 @@ class IntermediateCommentModel(Quantity):
         blank=True,
     )
     rating = models.CharField(
-        default=COMPLIANCE_LEVEL_RATING_CHOICES[0],
-        choices=COMPLIANCE_LEVEL_RATING_CHOICES,
-        max_length=100,  # рейтинг AI который указал AI
+        default="----",
+        choices=COMPLIANCE_LEVEL_RATING_CHOICES,  # рейтинг AI который указал AI
         verbose_name=_("Rating"),
         help_text=_("Rating from violations"),
         validators=[
             MinValueValidator(1),
-            MaxValueValidator(100),
         ],
         null=True,
         blank=True,
     )
-    refer = models.UUIDField(
+    refer = models.OneToOneField(
         "IntermediateFilesModel",
-        unique=True,
+        on_delete=models.CASCADE,
+        to_field="refer",
+        # editable=False,  # По этому ключу можем искать комент пользователя в "Comments"
+        db_column="refer",
+        related_name="comment_inter",
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
     )

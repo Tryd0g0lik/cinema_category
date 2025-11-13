@@ -110,15 +110,13 @@ class IntermediateFilesModel(Quantity):
         help_text=_("Violations - the views of violations"),
     )
     target_audience = models.CharField(
-        default=AGE_RATING_CHOICES[1],
-        choices=AGE_RATING_CHOICES,
-        max_length=5,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
+        default="----",
+        choices=AGE_RATING_CHOICES,  # юзер указывает целевую аудиторию документа перед отправкой на анализ
         help_text=_("Target audience for the film script"),
         verbose_name=_("Target Audience"),
         db_column="target_audience",
         validators=[
             MinValueValidator(2),
-            MaxValueValidator(5),
             RegexValidator(
                 regex=r"(^\d+\+$)",
             ),
@@ -153,9 +151,8 @@ class IntermediateFilesModel(Quantity):
         help_text=_("Reference link to the file - pdf, docx"),
     )
     status_file = models.CharField(
-        default=STATUS_FILE[0],
+        default="--------",
         choices=STATUS_FILE,
-        max_length=20,
         help_text=_("Status of the file to be parsing"),
         verbose_name=_("Status"),
         db_column="status_file",

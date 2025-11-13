@@ -45,7 +45,7 @@ def record_user_comment(sender, **kwargs):
     refer = intermediate_file.refer
     # ---------- COMMENT FROM USER-
     try:
-        comments_user = CommentsModel(refer=refer, comment=comment, author=author)
+        comments_user = CommentsModel(refer_file=refer, comment=comment, author=author)
         comments_user.save()
         log.info(
             "[%s]: Comment recorded for user %s: %s",

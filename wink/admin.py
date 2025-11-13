@@ -93,7 +93,6 @@ class CommentsAdmin(BasicAdmin):
     list_display = [
         "comment_author",
         "comment",
-        "refer",
         "created_at",
         "updated_at",
         "id",
