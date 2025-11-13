@@ -12,13 +12,6 @@ from wink.wink_api.files.views_ai_api import (
 )
 
 
-class BasicInline(admin.StackedInline):
-    model = IntermediateFilesModel
-    extra = 0
-    ordering = ["refer"]
-    fields = "__all__"
-
-
 class BasicAdmin(SnippetViewSet):
     list_per_page = 20
 
@@ -43,8 +36,8 @@ class IntermediateFilesAdmin(BasicAdmin):
     menu_label = _("Comments")
     icon = "comment"
     list_display = [
-        ("upload", "upload_ai"),
-        "refer",
+        "upload",
+        "upload_ai",
         "user",
         "created_at",
         "updated_at",
@@ -55,14 +48,12 @@ class IntermediateFilesAdmin(BasicAdmin):
         "upload_ai",
         "created_at",
         "updated_at",
-        "refer",
         "status_file",
     ]
     search_fields = [
         "upload_ai",
         "created_at",
         "updated_at",
-        "refer",
         "status_file",
     ]
     ordering = [
@@ -72,12 +63,7 @@ class IntermediateFilesAdmin(BasicAdmin):
         "status_file",
     ]
     filterset_class = IntermediateFilesAdmin
-    readonly_fields = ["upload_ai", "created_at", "refer", "status_file", "id"]
-
-    def get_refer_display(self, obj):
-        return str(obj.refer)[:8] + "..."  # Показывать только первые 8 символов UUID
-
-    get_refer_display.short_description = _("Reference")
+    readonly_fields = ["upload_ai", "created_at", "status_file", "id"]
 
 
 register_snippet(IntermediateFilesAdmin)
@@ -98,11 +84,10 @@ class CommentsAdmin(BasicAdmin):
         "id",
     ]
 
-    list_filter = ["comment_author", "refer", "created_at", "updated_at"]
-    search_fields = ["comment_author", "comment", "refer", "created_at", "updated_at"]
+    list_filter = ["comment_author", "created_at", "updated_at"]
+    search_fields = ["comment_author", "comment", "created_at", "updated_at"]
     ordering = ["comment_author", "created_at", "updated_at"]
     readonle_filds = ["comment_author", "created_at", "id"]
-    inlines = [BasicInline]
 
     def get_queryset(self, request):
         return super().get_queryset(request)
