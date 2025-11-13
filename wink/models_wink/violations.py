@@ -60,4 +60,4 @@ class BasisViolation(models.Model):
         ordering = ["violations"]
 
     def __str__(self):
-        return "Violations was loaded."
+        return f"Violations: {self.violations} - was loaded."
