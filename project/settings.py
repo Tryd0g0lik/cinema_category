@@ -27,7 +27,7 @@ APP_PORT = os.getenv("APP_PORT", "")
 APP_TIME_ZONE = os.getenv("APP_TIME_ZONE", "")
 
 # db production
-POSTGRES_MULTIPLE_DATABASES = os.getenv("POSTGRES_MULTIPLE_DATABASES", "")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
 
@@ -110,7 +110,7 @@ ALLOWED_HOSTS = [
 DATABASES = {
     "default": {
         'ENGINE': f'{DB_ENGINE}'.strip(),
-        'NAME': f'{POSTGRES_MULTIPLE_DATABASES}'.strip(),
+        'NAME': f'{POSTGRES_DB}'.strip(),
         'USER': f'{POSTGRES_USER}'.strip(),
         'PASSWORD': f"{POSTGRES_PASSWORD}".strip(),
         'HOST': f'{POSTGRES_HOST}'.strip(),

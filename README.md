@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-## Commands
-
-```
-py manage.py createsuperuser # - Создать пользователя
-py manage.py makemigrations # - Создать миграции для новых можелей db
-py manage.py migrate        # - Применить миграции к db
-py manage.py showmigrations # - Вывести список миграций
-py manage.py migrate <app_name> zero # - Откатиться до определенной миграции
-py manage.py migrate <app_name> <migration name> # - Отменить все миграции
-py manage.py collectstatic
-py manage.py runserver
-py manage.py delete_all_superusers # -  удалить всех польхователей из db - "wink/management/commands/delete_all_superusers.py"
-py manage.py load_violations # - загрузть файл excel - "wink/management/commands/load_violations.py". См. Законы РФ (ниже)
-daphne project.asgi:application # - mode: develop & poduction
-git clone <url_repo.git > # - Клонировать репозиторий 
-git log --all --oneline --graph --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(yellow)%h%C(auto)%d %C(white)%cd%Creset %s' # - история развития проекта
-
-=======
 ## Про API логику
 Пользователь загружает (один) файл.\
 Метаданные файла записываются в базу. Файл параллельно качается чанками и сохраняется на сервер.\
@@ -52,7 +33,7 @@ daphne project.asgi:application # - mode: develop & poduction
 git clone <url_repo.git > # - Клонировать репозиторий 
 git log --all --oneline --graph --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(yellow)%h%C(auto)%d %C(white)%cd%Creset %s' # - история развития проекта
 
->>>>>>> dev
+
 ```
 
 ### Note:
@@ -116,16 +97,6 @@ echo "All databases created successfully!"
 * "`redoc/`" API - возможно скачать для Postman;
 * "`swagger<format>/`".
 
-<<<<<<< HEAD
-![swagger](./img/swagger.png)
-
-## Админ-панель от Django
-### Admin
- _В процессе._
-
-
-### 
-=======
 ### Базобвые API-ключи
  - "`POST {{url}}/files/`"- сохранить файл. Передать чем раньше тем лучше, в связи с (возможным) большим весом файла. В ответ получаете ID-файла.;
  - "`POST {{url}}/cinema/`" - Пользователь отправляет данные из формы (web-страницы)для анализа/парсинг. Передать ID-файла;
@@ -154,8 +125,6 @@ echo "All databases created successfully!"
 ![admin Files](./img/admin_file_ide.png)
 
 
- 
->>>>>>> dev
 ## Дерево проекта
 
 ```text
@@ -245,7 +214,6 @@ APP_PORT=8000
 APP_TIME_ZONE=Asia/Krasnoyarsk
 
 # db
-POSTGRES_MULTIPLE_DATABASES=< база данных с которой работает app>
 POSTGRES_DB= < db_name> # Имя основной базы данный 
 POSTGRES_USER= < user_name_for_db>
 POSTGRES_HOST=< host_for_db >
