@@ -46,21 +46,43 @@ JWT_REFRESH_TOKEN_LIFETIME_DAYS = os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", 1
 #file extension
 f_extension = "pdf, docx"
 
+
 # wink age's category
 AGE_RATING_CHOICES = [
+    ("----", _("Не учьтено")),
     ("0+", _("Без возрастных ограничений")),
     ("6+", _("От 6 лет")),
     ("12+", _("От 12 лет")),
     ("16+", _("От 16 лет")),
     ("18+", _("Совершеннолетним")),
 ]
-
+# who is author of comment
+AUTHOR_OF_COMMET = [
+    ("AI", _("Рекомендация после анализа")),
+    ("User", _("Комментарий к файлу"))
+]
+# rating  scenario after parsing.
 COMPLIANCE_LEVEL_RATING_CHOICES = [
+    ("----", _("Не учьтено")),
     ("None", _("Соответствует")),
     ("mild", _("Незначительное нарушение")),
     ("moderate", _("Существенное нарушение")),
     ("severe", _("Грубое нарушение")),
 ]
+
+# status of the file to be parsing
+STATUS_FILE = [
+    ("--------", _("Не учьтено")),
+    ("processing", _("В процессе")),
+    ("ready", _("Завершено")),
+    ("error", _("Ошибка")),
+]
+
+# '''Cookie'''
+SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True # change to the True - CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict'
+SESSION_COOKIE_AGE = 86400
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -133,7 +155,6 @@ INSTALLED_APPS = [
     'taggit',
     'modelcluster',
     'rest_framework',
-    # 'drf_spectacular',
     'corsheaders',
     'drf_yasg',
     'adrf',
@@ -145,7 +166,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "person",
     "wink",
 ]
 
@@ -267,11 +287,7 @@ DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 DEFAULT_CHARSET = "utf-8"
 
-# '''Cookie'''
-SESSION_COOKIE_HTTPONLY = False  # CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # change to the True - CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = "Lax"  # CSRF_COOKIE_SAMESITE = 'Lax'  # or 'Strict'
-SESSION_COOKIE_AGE = 86400
+
 
 # '''CORS'''
 # False - this value is default and it's means what the server don't accept from other sources.
@@ -283,8 +299,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-# Allow the cookie in HTTP request.
-CORS_ALLOW_CREDENTIALS = True
 # Allow the methods to the methods in HTTP
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -294,6 +308,7 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
+CORS_ALLOW_ALL_ORIGINS=True
 
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -419,7 +434,6 @@ WAGTAILSEARCH_BACKENDS = {
 }
 WAGTAILADMIN_BASE_URL = CORS_ALLOWED_ORIGINS[0]
 
-
-# '''CELERY'''
-# CELERY_TASK_TRACK_STARTED = True
-# CELERY_TASK_TIME_LIMIT = 60 * 60 * 12
+#
+# # '''SSE'''
+# SSE_ENCODE_BASE64 = True

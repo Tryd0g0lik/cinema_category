@@ -2,15 +2,105 @@
 flow/views.py
 """
 
+import json
 import os
-
 from django.shortcuts import render
-
-from project import settings
 from project.settings import BASE_DIR
+from wink.models_wink.files import IntermediateFilesModel
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.decorators import api_view
+from django.http import StreamingHttpResponse
+from rest_framework.request import Request
 
 
-# Create your views here.
+@swagger_auto_schema(
+    method="get",
+    operation_summary="Получить поток событий для файла",
+    operation_description="Стриминг событий в реальном времени о статусе обработки файла",
+    manual_parameters=[
+        openapi.Parameter(
+            "file_id",
+            openapi.IN_PATH,
+            description="ID файла для отслеживания",
+            type=openapi.TYPE_INTEGER,
+            required=True,
+        )
+    ],
+    responses={
+        200: openapi.Response(
+            description="Поток событий Server-Sent Events",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    "status": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Статус обработки файла",
+                        enum=["error", "processing", "ready", "error"],
+                    ),
+                    "download_url": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="URL для скачивания готового файла",
+                        format="uri",
+                    ),
+                },
+            ),
+            examples={
+                "application/json": {
+                    "processing": {"status": "processing"},
+                    "ready": {
+                        "status": "ready",
+                        "download_url": "/api/v1/wink/download/abc123/",
+                    },
+                    "error": {"status": "error"},
+                }
+            },
+        ),
+        400: openapi.Response(
+            description="Неверный запрос",
+            examples={"application/json": {"error": "Invalid file ID"}},
+        ),
+        404: openapi.Response(
+            description="Файл не найден",
+            examples={"application/json": {"status": "error"}},
+        ),
+    },
+    tags=["SSE"],
+    produces=["text/event-stream"],
+)
+@api_view(["GET"])
+def file_event_stream(request: Request, file_id: int) -> StreamingHttpResponse:
+
+    def event_stream():
+        file_obj_lisd = IntermediateFilesModel.objects.filter(upload=file_id)
+        if not file_obj_lisd.exists():
+            yield f"data: {json.dumps({'status': 'error'})}\n\n"
+        # ---------- CYCLE AT THE PROCESS ----------
+        while file_obj_lisd[0].status_file == "processing":
+            yield f"data: {json.dumps({'status': 'processing'})}\n\n"
+            file_obj_lisd[0].refresh_from_db()
+
+        # ---------- READY SUCCESSFUL --------------
+        if file_obj_lisd[0].status_file.startswith("ready"):
+            yield f"data: {json.dumps({
+                'status': file_obj_lisd[0].status_file,
+                'download_url': f"/api/v1/wink/download/{file_obj_lisd[0].upload_ai.refer}",
+            })}\n\n"
+        # ---------- FILE RECEIVED THE ERROR ------
+        if file_obj_lisd[0].status_file.startswith("error"):
+            yield f"data: {json.dumps({
+                'status': file_obj_lisd[0].status_file,
+            })}\n\n"
+
+        response = StreamingHttpResponse(
+            event_stream(), content_type="text/event-stream"
+        )
+        response["Cache-Control"] = "no-cache"
+        return response
+
+
+# 3. Server-Sent Events (SSE)
 
 
 def main(request):

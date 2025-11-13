@@ -4,6 +4,7 @@ import logging
 import threading
 import os
 from adrf import viewsets
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.conf import settings
@@ -15,26 +16,10 @@ from wink.models_wink.files import (
     FilesModel,
 )
 from logs import configure_logging
-
+from wink.wink_api.upload_files import handle_uploaded_file
 
 log = logging.getLogger(__name__)
 configure_logging(logging.INFO)
-
-
-async def handle_uploaded_file(path: str, f, index: int):
-    """
-    :param str path:
-    :param f: it from django's 'request.FILES["upload"]'
-    :param int index:
-    :return: void
-    """
-    with open(path, "wb+") as destination:
-        for chunk in f.chunks(10 * 1024 * 1024):
-            destination.write(chunk)
-    path = path.split("upload")[1].replace("\\", "/")
-    f_oblect = await asyncio.to_thread(lambda: FilesModel.objects.get(id=index))
-    f_oblect.upload = f"upload{path}"
-    await f_oblect.asave()
 
 
 class FilesViewSet(viewsets.ModelViewSet):
@@ -44,7 +29,7 @@ class FilesViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_description="""
-        Событие от пользователя - загрузил файл на сервер.
+        `Событие от` пользователя - загрузил файл на сервер.
         This method record meta-data about files and the 'upload' field is do empty. It's for the main flow.
             Then, It create the new thread and inside of thread it upload the file to the server by server's path '`media/upload/%Y/%m/%d/file_name.{pdf|docx}`'
             Then, column '`upload`' is updating from the last row's empty in the database.
@@ -78,36 +63,32 @@ class FilesViewSet(viewsets.ModelViewSet):
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        "id": openapi.Schema(type=openapi.TYPE_INTEGER, example=12)
+                        "id_file": openapi.Schema(
+                            type=openapi.TYPE_INTEGER, example=12
+                        ),
+                        "id_user": openapi.Schema(
+                            type=openapi.TYPE_INTEGER, example=12
+                        ),
                     },
                 ),
             ),
             400: "{'errors': 'text of error'}",
         },
     )
-    async def create(self, request, *args, **kwargs):
+    async def create(self, request: Request, *args, **kwargs) -> Response:
         """
-        NODE: The method don't use the check on the duplicate!!!
+        DO: The method don't use the check on the duplicate!!!
+        Description: This is the method for records the user's file to the server.
+
         """
         error_text = "[%s.%s]:" % (
             __class__.__name__,
             self.create.__name__,
         )
+        user = request.user
         file = request.FILES["upload"]
-        serializer = self.get_serializer(data=request.data)
-        is_valid = serializer.is_valid()
-        if not is_valid:
-            log.error(
-                "%s Error => %s",
-                (
-                    error_text,
-                    "Request data is not valid.",
-                ),
-            )
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
         try:
-            # RECORD META DATA
+            # ----------- RECORD THE META DATA ------
             f_object = FilesModel(name=file.name, size=file.size, upload=None)
             await f_object.asave()
 
@@ -124,7 +105,7 @@ class FilesViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            # Get path for file
+            # ----------- GET THE PATH OF FILE ------
             date = datetime.date.today().strftime("%Y-%m-%d").split("-")
             file_path = f"upload\\{date[0]}\\{date[1]}\\{date[2]}\\{f_object.name}"
             upload_dir = os.path.join(settings.MEDIA_ROOT, file_path)
@@ -140,10 +121,10 @@ class FilesViewSet(viewsets.ModelViewSet):
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
                     loop.run_until_complete(
-                        handle_uploaded_file(upload_dir, file, f_object.id)
+                        handle_uploaded_file(upload_dir, file, f_object.id, FilesModel)
                     )
 
-                # OPEN NEW THREAD
+                # ----------- OPEN NEW THREAD -----------
                 thread = threading.Thread(target=_run_async)
                 thread.start()
                 thread.join()
@@ -156,4 +137,7 @@ class FilesViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({"error": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(data={"id": f_object.id}, status=status.HTTP_201_CREATED)
+        return Response(
+            data={"id_file": f_object.id, "id_user": user.id},
+            status=status.HTTP_201_CREATED,
+        )

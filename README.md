@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Commands
 
 ```
@@ -15,6 +16,43 @@ daphne project.asgi:application # - mode: develop & poduction
 git clone <url_repo.git > # - Клонировать репозиторий 
 git log --all --oneline --graph --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(yellow)%h%C(auto)%d %C(white)%cd%Creset %s' # - история развития проекта
 
+=======
+## Про API логику
+Пользователь загружает (один) файл.\
+Метаданные файла записываются в базу. Файл параллельно качается чанками и сохраняется на сервер.\
+Расчет на то, что:
+- пользователь от сервера далеко;
+- один файл может иметь большой вес. 
+
+Загруженный на сервер файл отправляет реферный ключ от файла на сторону AI/парсера/анализатора.\
+По рефер ключу начинает качатся файл для анализа.\
+!! Проверка на дубли не включена. Возможно дбулирование файлов. Если не против алгоритма "`md5`" можно создать проверку дублей.  
+
+Массово, один файл может качать 10 пользователей.\
+Рефер ключ обновляется каждые 90 секунд.\
+Перестаёт остановливает обновление через 10 минут или как только парсер начал качать файл.
+!! Логики дл перезапуска ключа - нет. 
+
+По SSE на фронт передаёт url фля загрузки файла.
+
+## Commands
+
+```
+py manage.py createsuperuser # - Создать пользователя
+py manage.py makemigrations # - Создать миграции для новых можелей db
+py manage.py migrate        # - Применить миграции к db
+py manage.py showmigrations # - Вывести список миграций
+py manage.py migrate <app_name> zero # - Откатиться до определенной миграции
+py manage.py migrate <app_name> <migration name> # - Отменить все миграции
+py manage.py collectstatic
+py manage.py runserver
+py manage.py delete_all_superusers # -  удалить всех польхователей из db - "wink/management/commands/delete_all_superusers.py"
+py manage.py load_violations # - загрузть файл excel - "wink/management/commands/load_violations.py". См. Законы РФ (ниже)
+daphne project.asgi:application # - mode: develop & poduction
+git clone <url_repo.git > # - Клонировать репозиторий 
+git log --all --oneline --graph --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(yellow)%h%C(auto)%d %C(white)%cd%Creset %s' # - история развития проекта
+
+>>>>>>> dev
 ```
 
 ### Note:
@@ -78,6 +116,7 @@ echo "All databases created successfully!"
 * "`redoc/`" API - возможно скачать для Postman;
 * "`swagger<format>/`".
 
+<<<<<<< HEAD
 ![swagger](./img/swagger.png)
 
 ## Админ-панель от Django
@@ -86,6 +125,37 @@ echo "All databases created successfully!"
 
 
 ### 
+=======
+### Базобвые API-ключи
+ - "`POST {{url}}/files/`"- сохранить файл. Передать чем раньше тем лучше, в связи с (возможным) большим весом файла. В ответ получаете ID-файла.;
+ - "`POST {{url}}/cinema/`" - Пользователь отправляет данные из формы (web-страницы)для анализа/парсинг. Передать ID-файла;
+ - "`POST {{url}}/download/:refer/`" - Сохранить результат анализа файл. (ещё в работе);
+ - "`GET {{url}}/download/:refer/`" - скачать файл;
+ - "`GET {{url}}/csrftoken/`" - получить CSRF-token;
+ - "`GET {{url}}/download/:index/`" - Стриминг событий в реальном времени о статусе обработки файла (SSE);
+ - "` POST {{url}}/comments/`" - Сохранить комментарии от пользователя и AI. Каждая сохраняется отдельной строкой;
+ - "`POST {{url}}/recommend/`" - В единой строке объеденяем пользователя и AI. 'refer' у всех общий;
+ - "`POST {{url}}/recommend/`" - В единой строке объеденяем пользователя и AI. 'refer' у всех общий;
+
+### SWAGGER
+![swagger](./img/swagger.png)
+
+## Админ-панель от Django
+### Admin-панель
+![admin root](./img/dmin_root.png)
+
+### Admin-Wink - таблицы 
+![admin Wink](./img/admin_wink.png)
+
+### Admin-таблица
+![admin Files](./img/admin_files.png)
+
+### Admin-таблица - редактирование
+![admin Files](./img/admin_file_ide.png)
+
+
+ 
+>>>>>>> dev
 ## Дерево проекта
 
 ```text
@@ -101,6 +171,11 @@ WINK
 │   ├──upload/ 
 │   └──classification_events.xlsx
 ├──wink/
+<<<<<<< HEAD
+=======
+│   ├──/admins
+│   │   └──*.py
+>>>>>>> dev
 │   ├──/management
 │   │   └──commands/
 │   │      └──*.py
@@ -258,3 +333,5 @@ python3 ./manage.py shell -c "
 
 ### Note:
 НЕ тестировалось ("`start_rotation`" )!! 
+
+

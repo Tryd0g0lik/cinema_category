@@ -4,11 +4,6 @@ wink/redis_utils.py
 
 from django.conf import settings
 
-# try:
-#     import redis
-# except ImportError:
-#     redis = None
-
 
 def get_redis_client():
     try:

@@ -290,6 +290,10 @@ core
 !./.logs.py
 
 
+<<<<<<< HEAD
 files/*
+=======
+files/ВАСИЛЬКИ_2.docx
+>>>>>>> dev
 !**/files
 !media/*.xlsx
