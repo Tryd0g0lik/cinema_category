@@ -81,7 +81,7 @@ class IntermediateFilesModel(Quantity):
         on_delete=models.CASCADE,
         verbose_name=_("File"),
         db_column="file_id",
-        help_text=_("Select existing the file id"),
+        help_text=_("Select existing the file's id of user"),
         related_name="loaded_files",
     )
     upload_ai = models.OneToOneField(
@@ -162,9 +162,11 @@ class IntermediateFilesModel(Quantity):
     )
 
     class Meta:
-        verbose_name = _("Intermediate_files")
-        verbose_name_plural = _("Intermediate_files")
+        verbose_name = _("Response AI")
+        verbose_name_plural = _("Response AI")
         db_table = "wink_intermediate_files"
 
     def __str__(self):
-        return f" File Id: {self.upload} was created at {self.created_at}."
+        return (
+            f"User: {self.user} file '{self.upload}'- created of {str(self.created_at)}"
+        )

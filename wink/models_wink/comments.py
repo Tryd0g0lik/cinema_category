@@ -7,6 +7,7 @@ from django.core.validators import (
     MaxLengthValidator,
     RegexValidator,
     MaxValueValidator,
+    MinLengthValidator,
 )
 from django.db.models import ForeignKey, CharField
 
@@ -34,21 +35,13 @@ class CommentsModel(models.Model):
         blank=True,
         verbose_name=_("Comments"),
     )
-    upload = models.FileField(
-        null=True,
-        blank=True,
-        verbose_name=_("Upload file"),
-        help_text=_("Upload file how result of parsing."),
-        db_column="upload",
-    )
     refer = models.OneToOneField(
         "IntermediateFilesModel",
-        unique=True,
-        to_field="refer",
         on_delete=models.CASCADE,
-        verbose_name=_("Reference File"),
-        db_column="refer_file_uuid_id",
-        related_name="refers",
+        # editable=False,  # По этому ключу можем искать комент пользователя в "Comments"
+        db_column="refer",
+        max_length=50,
+        help_text=_("Reference link to the file - pdf, docx"),
     )
     comment_author = models.CharField(
         default=AUTHOR_OF_COMMET[1],
@@ -57,8 +50,8 @@ class CommentsModel(models.Model):
         help_text=_("Comment author is AI  or User."),
         verbose_name=_("Comment author"),
         validators=[
-            MinValueValidator(2),
-            MaxValueValidator(30),
+            MinLengthValidator(2),
+            MaxLengthValidator(30),
             RegexValidator(
                 regex=r"(^[A-Z][A-Za-z-_]+$)",
             ),
@@ -88,6 +81,13 @@ class CommentsModel(models.Model):
         db_table = "wink_comments"
         ordering = ["id"]
 
+    # def __str__(self):
+    #     return self.created_at
+
+    # def save(self, *args, **kwargs):
+    #     pass
+    #     ref = self.refer.refer
+
 
 class IntermediateCommentModel(Quantity):
     """
@@ -103,6 +103,7 @@ class IntermediateCommentModel(Quantity):
     comments_user = models.ForeignKey(
         "CommentsModel",
         on_delete=models.CASCADE,
+        to_field="refer",
         verbose_name=_("Comments of user"),
         db_column="comments_user",
         related_name="comments_user",
@@ -122,11 +123,8 @@ class IntermediateCommentModel(Quantity):
         null=True,
         blank=True,
     )
-    refer = models.CharField(
-        # " ключ получаем из  поступивших результатов анализа от AI
-        verbose_name=_("Reference"),
-        editable=False,  # По этому ключу можем искать комент пользователя в "Comments"
-        db_column="refer",
+    refer = models.UUIDField(
+        "IntermediateFilesModel",
         unique=True,
         max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
@@ -150,25 +148,12 @@ class IntermediateCommentModel(Quantity):
     )
 
     class Meta:
-        verbose_name = _("Comment is intermediate")
-        verbose_name_plural = _("Comments is intermediates")
+        verbose_name = _("Response AI")
+        verbose_name_plural = _("Response AI")
         # db_table = "wink_comments_intermediate"
 
-    def __str__(self):
-        return f"Рекомендация: {self.comments_ai}"
-
     # def save(self, *args, **kwargs):
-    #     """
-    #
-    #     :param args:
-    #     :param kwargs:
-    #     :return:
-    #     """
-    #     # comment_user = Comments.objects
-    #     comment = self.comments_user.objects.filter(refer=self.refer)
-    #
-    #     if self.comments_user and len(comment) > 0:
-    #         comment
-    #         self.comments_user = comment.first()
-    #
-    #     super().save(*args, **kwargs)
+    #     pass
+    #     ref = self.refer.refer
+    def __str__(self):
+        return f"Intermediate Comment {str(self.comments_user)} - {self.refer}"
