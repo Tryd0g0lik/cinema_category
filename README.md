@@ -140,11 +140,8 @@ WINK
 │   ├──upload/ 
 │   └──classification_events.xlsx
 ├──wink/
-<<<<<<< HEAD
-=======
 │   ├──/admins
 │   │   └──*.py
->>>>>>> dev
 │   ├──/management
 │   │   └──commands/
 │   │      └──*.py
