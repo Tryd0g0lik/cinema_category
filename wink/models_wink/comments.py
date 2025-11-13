@@ -81,12 +81,8 @@ class CommentsModel(models.Model):
         db_table = "wink_comments"
         ordering = ["id"]
 
-    # def __str__(self):
-    #     return self.created_at
-
-    # def save(self, *args, **kwargs):
-    #     pass
-    #     ref = self.refer.refer
+    def __str__(self):
+        return f"Entry made: {self.comment_author} by refer: {self.refer} - {self.created_at}"
 
 
 class IntermediateCommentModel(Quantity):
@@ -136,9 +132,7 @@ class IntermediateCommentModel(Quantity):
         verbose_name=_("Created at"),
         help_text=_("Created at"),
         db_column="created_at",
-        validators=[
-            # RegexValidator(regex="(^\d{4}-\d{2}-\d{2}$)"),
-        ],
+        validators=[],
     )
     updated_at = models.DateField(
         auto_now=True,
@@ -150,10 +144,6 @@ class IntermediateCommentModel(Quantity):
     class Meta:
         verbose_name = _("Response AI")
         verbose_name_plural = _("Response AI")
-        # db_table = "wink_comments_intermediate"
 
-    # def save(self, *args, **kwargs):
-    #     pass
-    #     ref = self.refer.refer
     def __str__(self):
         return f"Intermediate Comment {str(self.comments_user)} - {self.refer}"

@@ -1,28 +1,15 @@
-from datetime import datetime
 from django.utils.translation import gettext_lazy as _
 
-# Register your models here.
 from django.contrib import admin
-from django.utils.formats import date_format
-from wagtail.admin.panels import FieldPanel
-from wagtail.admin.ui.tables import BaseColumn
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
-from wagtail.admin.ui.tables import UpdatedAtColumn
 
 from wink.admins.filters import FilesFilter, IntermediateFilesAdmin
-from wink.models_wink.comments import IntermediateCommentModel, CommentsModel
-
-# from wink.models_wink.files import FilesModel
+from wink.models_wink.comments import CommentsModel
 from wink.wink_api.files.views_ai_api import (
-    FileRecordOnlyView,
-    FileReadOnlyView,
     IntermediateFilesModel,
     FilesModel,
 )
-from wink.wink_api.files.views_files_api import FilesViewSet
-from wink.wink_api.files.views_intermediate_files_api import IntermediateFilesViewSet
-from wink.wink_api.violations.views_violations_api import BasisViolationViewSet
 
 
 class BasicInline(admin.StackedInline):
@@ -56,7 +43,7 @@ class IntermediateFilesAdmin(BasicAdmin):
     menu_label = _("Comments")
     icon = "comment"
     list_display = [
-        "upload",
+        ("upload", "upload_ai"),
         "refer",
         "user",
         "created_at",
@@ -111,6 +98,7 @@ class CommentsAdmin(BasicAdmin):
         "updated_at",
         "id",
     ]
+
     list_filter = ["comment_author", "refer", "created_at", "updated_at"]
     search_fields = ["comment_author", "comment", "refer", "created_at", "updated_at"]
     ordering = ["comment_author", "created_at", "updated_at"]
