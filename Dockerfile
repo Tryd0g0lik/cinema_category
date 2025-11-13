@@ -6,6 +6,9 @@ RUN mkdir /www && \
     mkdir /www/src/static
 WORKDIR /www/src
 COPY ./requirements.txt .
+RUN rm -rf wink/migrations && \
+    mkdir wink/migrations && \
+    touch wink/migrations/__init__.py
 RUN pip config set global.trusted-host "pypi.org files.pythonhosted.org"
 RUN python -m pip install --upgrade "pip>=25.0"
 # --no-cache-dir
