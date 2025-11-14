@@ -98,7 +98,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
     f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
@@ -214,8 +214,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "wink.middleware.AuthenticationMiddleware",
-    "project.middleware.error_handling.ErrorHandlingMiddleware",
     "project.middleware.middleware.SafeHostMiddleware",
+    "project.middleware.error_handling.ErrorHandlingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
@@ -333,6 +333,9 @@ CORS_ALLOWED_ORIGINS = [
     f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    f"http://{APP_HOST_REMOTE.strip()}:8001",
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
 ]
 
 
@@ -370,6 +373,9 @@ CSRF_TRUSTED_ORIGINS = [
     f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    f"http://{APP_HOST_REMOTE.strip()}:8001",
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
     ]
 # """REST_FRAMEWORK SETTINGS AND JWT-tokens"""
 # https://pypi.org/project/djangorestframework-simplejwt/4.3.0/

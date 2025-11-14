@@ -23,9 +23,8 @@ class SafeHostMiddleware:
     def __call__(self, request):
         host = request.get_host().split(":")[0]
 
-        safe_hosts = getattr(settings, "SAFE_HOSTS", None)
-        if safe_hosts is None:
-            safe_hosts = getattr(settings, "ALLOWED_HOSTS", [])
+        safe_hosts = getattr(settings, "ALLOWED_HOSTS", None)
+
 
         if host not in safe_hosts:
             log.info(f"Blocked request from unauthorized host: {host}")
