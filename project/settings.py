@@ -13,6 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 # .env
 load_dotenv()
@@ -98,11 +99,41 @@ if not SECRET_KEY:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
 ALLOWED_HOSTS = [
     f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
+    "0.0.0.0"
 ]
+SAFE_HOSTS = [
+    "db",
+    "backend",
+    "nginx",
+    "celery",
+    "redis",
+
+]
+
+def get_allowed_hosts():
+    """
+    The function is for the securite connection to the allowed hosts
+    """
+    hosts = ALLOWED_HOSTS + SAFE_HOSTS
+    hosts = [h.strip() for h in hosts if h.strip()]
+
+
+    if not hosts and os.environ.get('DJANGO_ENV') == 'production':
+        raise ImproperlyConfigured("ALLOWED_HOSTS must be set in production")
+
+    # Добавляем локальные хосты для разработки
+    if not hosts:
+        hosts = ['0.0.0.0', '127.0.0.1', '[::1]']
+
+    return hosts
+
+
+ALLOWED_HOSTS = get_allowed_hosts()
+
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

@@ -223,8 +223,14 @@ DB_ENGINE=django.db.backends.postgresql
 DATABASE_ENGINE_LOCAL=django.db.backends.sqlite3
 DATABASE_LOCAL=wink_db.sqlite3
 
-JWT_ACCESS_TOKEN_LIFETIME_MINUTES=5
-JWT_REFFRESH_TOKEN_LIFETIME_DAYS=10
+# state
+DJANGO_ENV=development
+# or  
+DJANGO_ENV=testing
+# or
+DJANGO_ENV=staging
+# or
+DJANGO_ENV=production
 ```
 ----
 
