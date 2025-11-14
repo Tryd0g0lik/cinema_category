@@ -33,6 +33,7 @@ daphne project.asgi:application # - mode: develop & poduction
 git clone <url_repo.git > # - Клонировать репозиторий 
 git log --all --oneline --graph --decorate --date=format:'%Y-%m-%d %H:%M:%S' --pretty=format:'%C(yellow)%h%C(auto)%d %C(white)%cd%Creset %s' # - история развития проекта
 
+
 ```
 
 ### Note:
@@ -124,7 +125,6 @@ echo "All databases created successfully!"
 ![admin Files](./img/admin_file_ide.png)
 
 
- 
 ## Дерево проекта
 
 ```text
@@ -211,7 +211,6 @@ APP_PORT=8000
 APP_TIME_ZONE=Asia/Krasnoyarsk
 
 # db
-POSTGRES_MULTIPLE_DATABASES=< база данных с которой работает app>
 POSTGRES_DB= < db_name> # Имя основной базы данный 
 POSTGRES_USER= < user_name_for_db>
 POSTGRES_HOST=< host_for_db >
@@ -224,8 +223,14 @@ DB_ENGINE=django.db.backends.postgresql
 DATABASE_ENGINE_LOCAL=django.db.backends.sqlite3
 DATABASE_LOCAL=wink_db.sqlite3
 
-JWT_ACCESS_TOKEN_LIFETIME_MINUTES=5
-JWT_REFFRESH_TOKEN_LIFETIME_DAYS=10
+# state
+DJANGO_ENV=development
+# or  
+DJANGO_ENV=testing
+# or
+DJANGO_ENV=staging
+# or
+DJANGO_ENV=production
 ```
 ----
 
