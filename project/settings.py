@@ -98,7 +98,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [
     f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
@@ -214,6 +214,8 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "wink.middleware.AuthenticationMiddleware",
+    "project.middleware.error_handling.ErrorHandlingMiddleware",
+    "project.middleware.middleware.SafeHostMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',

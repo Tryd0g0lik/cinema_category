@@ -46,6 +46,7 @@ class CommentsModel(models.Model):
         choices=AUTHOR_OF_COMMET,
         help_text=_("Comment author is AI  or User."),
         verbose_name=_("Comment author"),
+        max_length=10,
         validators=[
             MinLengthValidator(2),
             RegexValidator(
@@ -106,6 +107,7 @@ class IntermediateCommentModel(Quantity):
         choices=COMPLIANCE_LEVEL_RATING_CHOICES,  # рейтинг AI который указал AI
         verbose_name=_("Rating"),
         help_text=_("Rating from violations"),
+        max_length=50,
         validators=[
             MinValueValidator(1),
         ],
@@ -119,7 +121,6 @@ class IntermediateCommentModel(Quantity):
         # editable=False,  # По этому ключу можем искать комент пользователя в "Comments"
         db_column="refer",
         related_name="comment_inter",
-        max_length=50,
         help_text=_("Reference link to the file - pdf, docx"),
     )
     created_at = models.DateField(

@@ -115,6 +115,7 @@ class IntermediateFilesModel(Quantity):
         help_text=_("Target audience for the film script"),
         verbose_name=_("Target Audience"),
         db_column="target_audience",
+        max_length=50,
         validators=[
             MinValueValidator(2),
             RegexValidator(
@@ -153,6 +154,7 @@ class IntermediateFilesModel(Quantity):
     status_file = models.CharField(
         default="--------",
         choices=STATUS_FILE,
+        max_length=50,
         help_text=_("Status of the file to be parsing"),
         verbose_name=_("Status"),
         db_column="status_file",
