@@ -102,7 +102,8 @@ DEBUG = False
 ALLOWED_HOSTS = [
     f"{APP_HOST_REMOTE}".strip(),
     "127.0.0.1",
-    "0.0.0.0"
+    "0.0.0.0",
+    "localhost"
 ]
 SAFE_HOSTS = [
     "db",
@@ -152,6 +153,8 @@ DATABASES = {
 
 # DEBUG
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 if DEBUG:
     SECURE_BROWSER_XSS_FILTER = False
     SECURE_CONTENT_TYPE_NOSNIFF = False
@@ -327,6 +330,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8000",
 ]
 
 
@@ -363,6 +367,7 @@ CSRF_COOKIE_AGE = 1800 # seconds This is the time live of token (in COOKIE)
 CSRF_TRUSTED_ORIGINS = [
     f"http://{APP_HOST_REMOTE.strip()}:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8000",
     ]
 # """REST_FRAMEWORK SETTINGS AND JWT-tokens"""
 # https://pypi.org/project/djangorestframework-simplejwt/4.3.0/
