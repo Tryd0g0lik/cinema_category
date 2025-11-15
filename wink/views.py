@@ -93,11 +93,9 @@ def file_event_stream(request: Request, file_id: int) -> StreamingHttpResponse:
                 'status': file_obj_lisd[0].status_file,
             })}\n\n"
 
-        response = StreamingHttpResponse(
-            event_stream(), content_type="text/event-stream"
-        )
-        response["Cache-Control"] = "no-cache"
-        return response
+    response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    response["Cache-Control"] = "no-cache"
+    return response
 
 
 # 3. Server-Sent Events (SSE)

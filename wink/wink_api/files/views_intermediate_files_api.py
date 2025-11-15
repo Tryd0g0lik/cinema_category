@@ -1,16 +1,12 @@
 import asyncio
-import threading
-import requests
 from adrf import viewsets
 import logging
-from django.apps import apps
 from rest_framework import status, permissions
 from rest_framework.response import Response
 
-from project.settings import APP_PROTOCOL, APP_HOST_REMOTE, APP_PORT_AI, APP_HOST
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.models_wink.violations import BasisViolation
-from wink.tasks.task_start_rotation import start_rotation
+from wink.signals import user_comment_signal, file_upload_signal
 
 from wink.wink_api.files.serialisers import IntermediateFilesSerializer
 from drf_yasg import openapi
@@ -160,7 +156,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             __class__,
             self.create.__name__,
         )
-        # ОТПРАВИТЬ СИГНАЛ НА AI ЧТОБ НАЧИНАЛА КАЧАТЬ !!!
+
         user = request.user
         file_id = None
 
@@ -190,7 +186,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 file = await asyncio.to_thread(
                     lambda: FilesModel.objects.get(id=file_id)
                 )
-                #     # ---- СОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ
+                # ---- СОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ
                 if not file:
                     return Response(
                         {
@@ -207,46 +203,35 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 )
                 index = intermediate_file.id
                 serializer = self.get_serializer(intermediate_file)
-                if comment is not None and len(comment) > 0:
-                    # -------------- RECORDING THE USER's COMMENT --
-                    #  Here, we work with user comments - they, was sent to the AI parser process.
-                    from wink.apps import signal
+                try:
 
-                    kwargs = {
-                        "user_id": user.id,
-                        "comment": comment,
-                        "file_id": file_id,
-                        "author": "User",
-                    }
-                    await signal.asend(sender=self.create.__name__, **kwargs)
-                    log.info("Signal START & Sender: %s", (self.create.__name__,))
+                    if comment is not None and len(comment) > 0:
+                        # -------------- SIGNAL - RECORDING THE USER's COMMENT
+                        #  Here, we work with user comments - they, was sent to the AI parser process.
 
-                # -------------- AI REQUESTS GET & REFER KEY OF FILE
-                # тут отправляем GET запрос на AI + refer в URL-е
-                def _run_async():
-                    """
-                    There is we open the new loop and send the query to the AI side.
-                    Our user don't waiting for us - when we will finish the upload.
-                    :return: void.
-                    """
+                        kwargs = {
+                            "user_id": user.id,
+                            "comment": comment,
+                            "file_id": file_id,
+                            "author": "User",
+                        }
+                        user_comment_signal.send(sender=self.__class__, **kwargs)
+                        log.info("Signal START & Sender: %s", (self.create.__name__,))
 
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.run_until_complete(
-                        asyncio.to_thread(
-                            lambda: requests.get(
-                                url=f"{APP_PROTOCOL}://{APP_HOST}:{APP_PORT_AI}/api/v1/wink/get/{intermediate_file.refer.hex}/"
-                            )
-                        )
+                    # -------------- SIGNAL - AI FOR UPLOAD A FILE BY REFER
+
+                    kwargs = {"refer": intermediate_file.refer.hex}
+                    file_upload_signal.send(sender=self.__class__, **kwargs)
+                except Exception as e:
+                    return Response(
+                        {"errors": f"{error_text} SIGNAL FOR AI: => {e.args[0]}"},
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
-
-                # ----------- OPEN NEW THREAD -----------
-                thread = threading.Thread(target=_run_async)
-                thread.start()
-                thread.join()
                 # -------------- START THE CELERY --------
                 # The django's signal can use for the time then start the 'start_rotation'.
                 try:
+                    from wink.tasks.task_start_rotation import start_rotation
+
                     await asyncio.to_thread(
                         lambda: start_rotation.delay(serializer.data["upload"])
                     )
@@ -259,7 +244,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
                 # ----------------------------------------
 
-                ser = serializer.data
+                ser = await asyncio.to_thread(lambda: serializer.data)
                 data = {
                     "id": ser.get("id"),
                     "upload": ser.get("upload"),

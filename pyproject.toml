@@ -30,6 +30,7 @@ redis = "^7.0.1"
 pandas = "^2.3.3"
 django-redis = "^6.0.0"
 wagtail_localize = "^1.12.2"
+aiohttp = "^3.13.2"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -5,8 +5,6 @@ wink/tasks/task_record_user_comment.py
 import time
 import logging
 from django.apps import apps
-
-from django.core.signals import request_finished
 from logs import configure_logging
 
 
@@ -34,6 +32,11 @@ def record_user_comment(sender, **kwargs):
     :param kwargs:
     :return:
     """
+    print("Start the signal by the user commit")
+    log.info(
+        "[%s]: Start the signal by the user commit",
+        (record_user_comment.__name__,),
+    )
     user_id = kwargs["user_id"]
     comment = kwargs["comment"]
     file_id = kwargs["file_id"]
@@ -57,6 +60,3 @@ def record_user_comment(sender, **kwargs):
             (record_user_comment.__name__, user_id, e.args[0]),
         )
     return
-
-
-request_finished.connect(record_user_comment)

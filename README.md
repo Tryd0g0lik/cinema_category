@@ -237,12 +237,12 @@ DJANGO_ENV=production
 
 |                      |                               |                           |
 |:---------------------|:------------------------------|:--------------------------|
-| async "`Django`"           |      "`wagtail`"                | "`PostgreSQL` or "`ASQLite`" |
-| "`daphne`"           |         "`channels`"            |     "`djangorestframework`"            |
+| async "`Django`"           | "`wagtail`"                   | "`PostgreSQL` or "`ASQLite`" |
+| "`daphne`"           | "`channels`"                  |     "`djangorestframework`"            |
 | [swagger](./swagger) | [nginx](./nginx/default.conf) |[docker-compose](./docker-compose.yml)   |
-| "`asincio`"              | "`adrf`" | "`psycopg2`"|
-|"`channels[daphne]`"|"`celery[redis]`"|"`redis`"|
-|"`pandas`"|||
+| "`asincio`"              | "`adrf`"                      | "`psycopg2`"|
+|"`channels[daphne]`"| "`celery[redis]`"             |"`redis`"|
+|"`pandas`"| "`aiohttp`"                              ||
 ----
 
 ## Permissions
