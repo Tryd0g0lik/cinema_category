@@ -25,6 +25,7 @@ APP_PROTOCOL = os.getenv("APP_PROTOCOL", "")
 APP_HOST = os.getenv("APP_HOST", "")
 APP_HOST_REMOTE = os.getenv("APP_HOST_REMOTE", "")
 APP_PORT = os.getenv("APP_PORT", "")
+APP_PORT_AI = os.getenv("APP_PORT_AI", "")
 APP_TIME_ZONE = os.getenv("APP_TIME_ZONE", "")
 
 # db production

@@ -1,12 +1,13 @@
 import asyncio
-
+import threading
+import requests
 from adrf import viewsets
 import logging
 from django.apps import apps
 from rest_framework import status, permissions
 from rest_framework.response import Response
 
-
+from project.settings import APP_PROTOCOL, APP_HOST_REMOTE, APP_PORT_AI, APP_HOST
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.models_wink.violations import BasisViolation
 from wink.tasks.task_start_rotation import start_rotation
@@ -137,6 +138,9 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
         Note: From "`FileReadOnlyModel`", AI can download.
         Note: ОЗДАТЬ ПРОВЕРКУ НА ДУБЛИКАТ ФАЙЛОВ иначе подится куаук/ На данный
             момент, зпереименовать или ждать один день. После повторить загрузку.
+
+        In the body of method we can see the 'requests.get'. From here - we have sending the
+         request by the GET method (to the AI side) and insert the refer-key of file (for pars).
         :param request:
         :param args:
         :param kwargs:
@@ -151,6 +155,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             }
             ```
         """
+        url_ai = "/api/v1/wink/get/889e986a9512455984edee82c53d7301/"
         error_text = "[%s.%s]:" % (
             __class__,
             self.create.__name__,
@@ -215,9 +220,30 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                     }
                     await signal.asend(sender=self.create.__name__, **kwargs)
                     log.info("Signal START & Sender: %s", (self.create.__name__,))
-                # -------------- AI REQUEST --------------
+
+                # -------------- AI REQUESTS GET & REFER KEY OF FILE
                 # тут отправляем GET запрос на AI + refer в URL-е
-                # ----------------------------------------
+                def _run_async():
+                    """
+                    There is we open the new loop and send the query to the AI side.
+                    Our user don't waiting for us - when we will finish the upload.
+                    :return: void.
+                    """
+
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    loop.run_until_complete(
+                        asyncio.to_thread(
+                            lambda: requests.get(
+                                url=f"{APP_PROTOCOL}://{APP_HOST}:{APP_PORT_AI}/api/v1/wink/get/{intermediate_file.refer.hex}/"
+                            )
+                        )
+                    )
+
+                # ----------- OPEN NEW THREAD -----------
+                thread = threading.Thread(target=_run_async)
+                thread.start()
+                thread.join()
                 # -------------- START THE CELERY --------
                 # The django's signal can use for the time then start the 'start_rotation'.
                 try:

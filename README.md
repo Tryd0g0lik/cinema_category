@@ -208,6 +208,7 @@ APP_PROTOCOL=http
 APP_HOST=127.0.0.1
 APP_HOST_REMOTE= < host_from_remote_server >
 APP_PORT=8000
+APP_PORT_AI=8001
 APP_TIME_ZONE=Asia/Krasnoyarsk
 
 # db

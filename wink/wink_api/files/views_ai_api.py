@@ -137,6 +137,7 @@ class FileReadOnlyView(views.APIView):
             except Exception as e:
                 intermediate_obj.status_file = "error"
                 import traceback
+
                 tb = traceback.format_exc()
                 log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
 
@@ -154,7 +155,6 @@ class FileReadOnlyView(views.APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         # -------------- ALL SUCCESSFUL ----------
-
 
 
 class FileRecordOnlyView(views.APIView):
