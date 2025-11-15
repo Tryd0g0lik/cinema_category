@@ -42,7 +42,9 @@ services:
                 done
 
                 prin('Database is ready! Starting migrations...')
-                "                
+                "
+                python3 ./manage.py migrate wink zero
+                Get-ChildItem wink/migrations/*.py | Where-Object {$_.Name -ne "__init__.py"} | Remove-Item
                 python3 ./manage.py makemigrations
                 python3 ./manage.py migrate
                 python3 ./manage.py collectstatic --clear --noinput

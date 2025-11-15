@@ -1,7 +1,7 @@
 from http.client import responses
 from typing import Any
 
-from django.contrib.auth import (authenticate, login)
+from django.contrib.auth import authenticate, login
 
 from django.conf import settings
 from django.db import connection
@@ -20,7 +20,9 @@ class AuthenticationMiddleware:
             try:
                 root_user = User.objects.get(username="root")
             except User.DoesNotExist:
-                root_user = User.objects.create_user(username="root", email="email@email.ru", password="123")
+                root_user = User.objects.create_user(
+                    username="root", email="email@email.ru", password="123"
+                )
             if root_user:
                 root_user.is_staff = True
                 root_user.is_active = True

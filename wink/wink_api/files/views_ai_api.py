@@ -113,6 +113,7 @@ class FileReadOnlyView(views.APIView):
                 intermediate_obj.status_file = "error"
                 t_error = f"{error_text} ERROR => The file invalid."
                 log.info(t_error)
+                intermediate_obj.save()
                 return Response(
                     {"errors": t_error},
                     status=status.HTTP_404_NOT_FOUND,
@@ -129,15 +130,19 @@ class FileReadOnlyView(views.APIView):
             # -------------- START THE CELERY --------
             # The django's signal can use for the time then start the 'start_rotation'.
             # STOPNING KEY
+
             try:
                 stop_rotation.delay(user_id)
+                intermediate_obj.status_file = "ready"
             except Exception as e:
                 intermediate_obj.status_file = "error"
                 import traceback
 
                 tb = traceback.format_exc()
                 log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
-            file_obj.status_file = "ready"
+
+            intermediate_obj.save()
+            return response
         except Exception as e:
             if index:
                 intr = IntermediateFilesModel.objects.filter(id=index)
@@ -150,7 +155,6 @@ class FileReadOnlyView(views.APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         # -------------- ALL SUCCESSFUL ----------
-        return response
 
 
 class FileRecordOnlyView(views.APIView):
@@ -163,7 +167,10 @@ class FileRecordOnlyView(views.APIView):
          1) используется VIEW который получает файл сценария от пользователя. От пользователя поступает файл в виде данных из фармы.
          2) От AI поступает (ответ - результат анализа/парсинга) файл JSON но сохраняется через Serializer.
         """
-        serializer = FilesSerializer(data=request.data)
+        data_ = request.data
+        if isinstance(data_, str):
+            data = json.loads(data_)
+        serializer = FilesSerializer(data=data_)
         index = None
         try:
             # ------------ RECORD OF FILE (FROM AI) ------------
