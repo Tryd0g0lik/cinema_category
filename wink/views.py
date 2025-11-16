@@ -5,7 +5,7 @@ flow/views.py
 import json
 import os
 from django.shortcuts import render
-from project.settings import BASE_DIR
+from project.settings import BASE_DIR, STATUS_FILE
 from wink.models_wink.files import IntermediateFilesModel
 
 from drf_yasg import openapi
@@ -75,20 +75,20 @@ def file_event_stream(request: Request, file_id: int) -> StreamingHttpResponse:
     def event_stream():
         file_obj_lisd = IntermediateFilesModel.objects.filter(upload=file_id)
         if not file_obj_lisd.exists():
-            yield f"data: {json.dumps({'status': 'error'})}\n\n"
+            yield f"data: {json.dumps({'status': STATUS_FILE[3][0]})}\n\n"
         # ---------- CYCLE AT THE PROCESS ----------
-        while file_obj_lisd[0].status_file == "processing":
-            yield f"data: {json.dumps({'status': 'processing'})}\n\n"
+        while file_obj_lisd[0].status_file == STATUS_FILE[1][0]:
+            yield f"data: {json.dumps({'status': STATUS_FILE[1][0]})}\n\n"
             file_obj_lisd[0].refresh_from_db()
 
         # ---------- READY SUCCESSFUL --------------
-        if file_obj_lisd[0].status_file.startswith("ready"):
+        if file_obj_lisd[0].status_file.startswith(STATUS_FILE[2][0]):
             yield f"data: {json.dumps({
                 'status': file_obj_lisd[0].status_file,
                 'download_url': f"/api/v1/wink/download/{file_obj_lisd[0].upload_ai.refer}",
             })}\n\n"
         # ---------- FILE RECEIVED THE ERROR ------
-        if file_obj_lisd[0].status_file.startswith("error"):
+        if file_obj_lisd[0].status_file.startswith(STATUS_FILE[3][0]):
             yield f"data: {json.dumps({
                 'status': file_obj_lisd[0].status_file,
             })}\n\n"

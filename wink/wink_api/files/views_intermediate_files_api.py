@@ -4,6 +4,7 @@ import logging
 from rest_framework import status, permissions
 from rest_framework.response import Response
 
+from project.settings import STATUS_FILE
 from wink.models_wink.files import IntermediateFilesModel, FilesModel
 from wink.models_wink.violations import BasisViolation
 from wink.signals import user_comment_signal, file_upload_signal
@@ -239,7 +240,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 except Exception as e:
                     import traceback
 
-                    intermediate_file.status_file = "error"
+                    intermediate_file.status_file = STATUS_FILE[3][0]
                     tb = await asyncio.to_thread(lambda: traceback.format_exc())
                     log.error("[start_rotation]: ERROR => " + f"{str(e)} => {tb}")
                 # ----------------------------------------
@@ -259,7 +260,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
             except (FilesModel.DoesNotExist, BasisViolation.DoesNotExist) as error:
                 intr = IntermediateFilesModel.objects.filter(id=index)
                 if intr.exists():
-                    intr[0].status_file = "error"
+                    intr[0].status_file = STATUS_FILE[3][0]
                 return Response(
                     {
                         "errors": f"{error_text} => File with id '{file_id}' not found or {str(error)}"
@@ -270,7 +271,7 @@ class IntermediateFilesViewSet(viewsets.ModelViewSet):
                 if index:
                     intr = IntermediateFilesModel.objects.filter(id=index)
                     if intr.exists():
-                        intr[0].status_file = "error"
+                        intr[0].status_file = STATUS_FILE[3][0]
                 return Response(
                     {"errors": f"{error_text} => {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,

@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from logs import configure_logging
+from project.settings import STATUS_FILE
 from wink.tasks.task_start_rotation import stop_rotation
 from wink.wink_api.files.serialisers import FilesSerializer
 
@@ -110,7 +111,7 @@ class FileReadOnlyView(views.APIView):
                 or not file_obj.upload
                 or not os.path.exists(file_obj.upload.path)
             ):
-                intermediate_obj.status_file = "error"
+                intermediate_obj.status_file = STATUS_FILE[3][0]
                 t_error = f"{error_text} ERROR => The file invalid."
                 log.info(t_error)
                 intermediate_obj.save()
@@ -133,9 +134,9 @@ class FileReadOnlyView(views.APIView):
 
             try:
                 stop_rotation.delay(user_id)
-                intermediate_obj.status_file = "ready"
+                intermediate_obj.status_file = STATUS_FILE[3][0]
             except Exception as e:
-                intermediate_obj.status_file = "error"
+                intermediate_obj.status_file = STATUS_FILE[3][0]
                 import traceback
 
                 tb = traceback.format_exc()
@@ -147,7 +148,7 @@ class FileReadOnlyView(views.APIView):
             if index:
                 intr = IntermediateFilesModel.objects.filter(id=index)
                 if intr.exists():
-                    intr[0].status_file = "error"
+                    intr[0].status_file = STATUS_FILE[3][0]
             t_error = f"ERROR => {e.args[0]}"
             log.error(t_error)
             return Response(
@@ -200,14 +201,14 @@ class FileRecordOnlyView(views.APIView):
             f_ai = f_ai_list.first()
             index = f_ai.id
             f_ai.upload_ai = f_obj.first()
-            f_ai.status_file = "ready"
+            f_ai.status_file = STATUS_FILE[3][0]
             f_ai.save()
 
         except Exception as e:
             if index:
                 intr = IntermediateFilesModel.objects.filter(id=index)
                 if intr.exists():
-                    intr[0].status_file = "error"
+                    intr[0].status_file = STATUS_FILE[3][0]
             text_error = e.args[0]
             log.error(f"[FileRecordOnlyModel]: ERROR => {text_error}"),
             return Response(
