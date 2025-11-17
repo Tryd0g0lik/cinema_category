@@ -327,24 +327,25 @@ python3 ./manage.py shell -c "
 
 ### Celery & Redis code
 - [Регистрация celery](project/__init__.py)
-- [Создаю дочернего клиента с которым работатю в app c redis](wink/redis_utils.py) - подфункция для проыерки подключения. От сюда уже начинается кеширование данных на Redis (через задачи).
+- [Создаю дочернего клиента с которым работатю в app c redis](wink/redis_utils.py) - подфункция для проверки подключения. От сюда уже начинается кеширование данных на Redis (через задачи).
 - [Celery container](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/docker-compose.yml#L89)
 - [Redis container](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/docker-compose.yml#L110)
+\
 **Note**: Работа с Redis & Celery проходит предпочтительно через задачи и отдельный поток. Основная цель - не задерживать user-а.
 
 #### === start_rotation
 Работа с refer key (от файла).\
-Цель задачи - реализация логиуи представленной выше "*Идея такова*"\
+Цель задачи - реализация логики представленной выше "[Идея такова](https://github.com/Tryd0g0lik/cinema_category/tree/master?tab=readme-ov-file#celery-tasks)"\
 [Содаю ключи](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L24) для контроля:
  - "`RUN_LOCK_KEY`" предотвращаем асинхронный запуск от одного пользователя.
  - "`ACTIVE_COUNT_KEY`" ограничиваю количество обращений к одному файлу. Не больше 10 пользователей.
 
-Дальше это "`STOP_FLAG_KEY`" (остановка работ по каждому запуску), "`ACTIVE_COUNT_KEY`"  (контроль над количеством ключей/файла), "`MAX_CONCURRENT`" лимит пользователей и [lua redis - DECR_SAFE_LUA](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L34) + [DECR_SAFE_LUA задаём](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L124) код который под капотом вызывается. 
+Дальше это "`STOP_FLAG_KEY`" (остановка работ по каждому запуску), "`ACTIVE_COUNT_KEY`"  (контроль над количеством ключей/файла), "`MAX_CONCURRENT`" лимит пользователей и [lua redis - DECR_SAFE_LUA](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L34) + [DECR_SAFE_LUA задаём](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L124) код который под капотом Redis вызывается. 
 
 
 **И так**
 - [качаю мета-данные от файла](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L89).\
-    Почему "`мета-данные`"  потому, что вся логика app построена - делить строковые сохраняем как обычно на django. Данные [файл в отдельном потоке](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/wink_api/files/views_files_api.py#L112) качается чанками/кусочками и после сохраняем в \
+    Почему "`мета-данные`"  потому, что вся логика app (работы с файлом) построена - строковые данные файла сохраняем как обычно на django. Данные [файла в отдельном потоке](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/wink_api/files/views_files_api.py#L112) качается чанками/кусочками и после сохраняем в \
 файл по маршруту указанном в "`мета-данных`".
 
 - получил файл и [создаю ключ ](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L103)(контролирующий кличество) в redis;
@@ -353,6 +354,6 @@ python3 ./manage.py shell -c "
 
 
 - [deadline ключа](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L115) - если к этому моменту файл не начали скачивать (качать должен контейнер с LM), deadline ключа обновляется. Deadline 90 сек; 
-- [тут увеличиваем время](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L135) жизни refer-key на 30 секунд, чтоб [успеть обновить](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L152) и [обновление в базе](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L164); 
+- [тут увеличиваем время](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L135) жизни refer-key на 30 секунд (в рамках общих 90 с.), чтоб [успеть обновить](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L152) и [обновление в базе](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L164); 
 - deadline от refer-key останавливается в 2-х случаях. Тут [проверка крайнего срока](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L143) (10 минут) когда refer-key обновляется , а качать не начинали (тоесть где-то , что-то отвалилось);
 - [Тут получаю сигнал](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/wink_api/files/views_ai_api.py#L136) - файл скачивается и [останавливаю работу](https://github.com/Tryd0g0lik/cinema_category/blob/6729d261c59e4dd98cf14259d6b0ed2c96e5a5b1/wink/tasks/task_start_rotation.py#L219C5-L219C18) с refer-key в кеше
