@@ -64,7 +64,6 @@ def start_rotation(inter_pk: int, interval: int = 90, duration: int = 600) -> bo
     if inter_pk is None:
         log.info("start_rotation called with inter_pk=None")
         return False
-    print("HALLO WORD!!")
     r = get_redis_client()
     lock_key = RUN_LOCK_KEY % str(inter_pk)
     stop_key = STOP_FLAG_KEY % str(inter_pk)
