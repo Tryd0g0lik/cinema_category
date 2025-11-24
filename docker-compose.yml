@@ -107,6 +107,27 @@ services:
             - queue
             - backend
             - database
+    celery_beat:
+        container_name: celery_beat_app
+        build:
+            context: .
+            dockerfile: ./Dockerfile  # Тот же Dockerfile, что и для backend
+        env_file: ./.env
+        command: #  -concurrency=2
+            - sh
+            - -c
+            - "celery -A project.celery beat --loglevel=info"
+
+        volumes:
+            - .:/www/src
+        depends_on:
+            - db
+            - redis
+        restart: unless-stopped
+        networks:
+            - queue
+            - backend
+            - database
     redis:
         container_name: redis_app
         image: redis:7.2-alpine
